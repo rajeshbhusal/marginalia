@@ -1,7 +1,9 @@
 from collections.abc import AsyncIterator
+from typing import Annotated
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from uuid import uuid4
 
+from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -82,3 +84,7 @@ async def db_session() -> AsyncIterator[AsyncSession]:
     """FastAPI dependency that provides a session per request."""
     async with get_session() as session:
         yield session
+
+
+# Route parameter type for a request-scoped session: `db: DBSession`
+DBSession = Annotated[AsyncSession, Depends(db_session)]

@@ -16,7 +16,7 @@ class LLMCacheEntry(BaseDBModel, table=True):
     __tablename__ = "llm_cache"
     __table_args__ = (UniqueConstraint("key", name="uq_llm_cache_key"),)
 
-    key: str = Field(index=True)
+    key: str  # Indexed through the unique constraint
     provider: str
     model: str
     task: str

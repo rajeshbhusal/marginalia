@@ -1,8 +1,8 @@
 import uuid
 from datetime import datetime
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
 from app.course.blocks import Block, BlockDraft
 from app.llm.schema import DraftModel
@@ -144,12 +144,15 @@ class ResearchNotes(BaseModel):
 
 # --- API -------------------------------------------------------------------------------------
 
+Title = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
+Text = Annotated[str, StringConstraints(strip_whitespace=True, max_length=1000)]
+
 
 class CourseCreate(BaseModel):
-    goal: str = Field(min_length=3, max_length=500)
+    goal: Annotated[str, StringConstraints(strip_whitespace=True, min_length=3, max_length=500)]
     depth: Depth = Depth.practitioner
     learning_style: LearningStyle = LearningStyle.reading
-    background: str = Field(default="", max_length=1000)
+    background: Text = ""
 
 
 class DiagnosticQuestionOut(BaseModel):
@@ -165,25 +168,33 @@ class DiagnosticAnswersIn(BaseModel):
 
 class OutlineSectionIn(BaseModel):
     id: str | None = None  # New sections have no id yet
-    title: str = Field(min_length=1, max_length=200)
-    summary: str = Field(default="", max_length=600)
+    title: Title
+    summary: Text = ""
 
 
 class OutlineModuleIn(BaseModel):
     id: str | None = None
-    title: str = Field(min_length=1, max_length=200)
-    summary: str = Field(default="", max_length=600)
+    title: Title
+    summary: Text = ""
     sections: list[OutlineSectionIn] = Field(min_length=1, max_length=20)
 
 
 class OutlineUpdate(BaseModel):
-    title: str = Field(min_length=1, max_length=200)
-    description: str = Field(default="", max_length=1000)
+    title: Title
+    description: Text = ""
     modules: list[OutlineModuleIn] = Field(min_length=1, max_length=20)
 
 
-class OutlineRegenerate(BaseModel):
-    instructions: str = Field(default="", max_length=1000)
+class OutlineRevision(BaseModel):
+    instructions: Text = ""
+
+
+class SectionGenerate(BaseModel):
+    regenerate: bool = False  # Rewrite a section that is already written (removes its threads)
+
+
+class SectionProgress(BaseModel):
+    completed: bool = True
 
 
 class SectionSummary(BaseModel):

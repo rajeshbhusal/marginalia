@@ -27,3 +27,28 @@ async def database():
         await conn.run_sync(SQLModel.metadata.create_all)
     yield
     await dispose_engine()
+
+
+@pytest.fixture
+def fake_llm():
+    """A fresh fake provider for one test; its `requests` list records every call."""
+    from app.llm import set_llm
+    from app.llm.providers.fake import FakeProvider
+
+    provider = FakeProvider()
+    set_llm(provider)
+    yield provider
+    set_llm(None)
+
+
+@pytest.fixture
+async def client(fake_llm):
+    import httpx
+
+    from app import jobs
+    from app.main import app
+
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as http:
+        yield http
+    await jobs.drain()

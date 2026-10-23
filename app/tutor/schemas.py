@@ -1,0 +1,45 @@
+import uuid
+from datetime import datetime
+from typing import Annotated, Literal
+
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints
+
+Question = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=2000)]
+
+
+class ThreadCreate(BaseModel):
+    block_id: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=64)]
+    quote: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=2000)]
+    # A little of the text before and after the quote, to find the passage again
+    prefix: str = Field(default="", max_length=200)
+    suffix: str = Field(default="", max_length=200)
+    question: Question
+
+
+class MessageCreate(BaseModel):
+    content: Question
+
+
+class ThreadUpdate(BaseModel):
+    resolved: bool
+
+
+class MessageOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    role: Literal["learner", "tutor"]
+    content: str
+    created: datetime
+
+
+class ThreadOut(BaseModel):
+    id: uuid.UUID
+    section_id: uuid.UUID
+    block_id: str
+    quote: str
+    prefix: str
+    suffix: str
+    resolved: bool
+    created: datetime
+    messages: list[MessageOut]
