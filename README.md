@@ -31,6 +31,8 @@ Open <http://localhost:8000>. Postgres runs in its own container, and migrations
 
 No API key yet? Set `LLM_PROVIDER=fake` in `.env` to run with an offline stand-in model that writes clearly generic placeholder content, then click **Try the demo course** on the home page. The demo course is a real, hand-written course on Bayesian thinking (with diagrams, maths, code, exercises and a margin thread) that needs no model to read.
 
+> **Run it locally or behind your own login.** This version has no user accounts: anyone who can reach the app can read every course and create new ones, which spends your API credits.
+
 ## Local development
 
 Prerequisites: Python 3.12+ with [uv](https://docs.astral.sh/uv/), Node 22.22+ (Node 24 LTS recommended) and Docker (for Postgres) or a Postgres of your own.
