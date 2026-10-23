@@ -296,3 +296,9 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+# Marginalia
+.ruff_cache/
+test-results/
+playwright-report/
+# The Python template above ignores lib/ everywhere; the frontend keeps code there.
+!frontend/src/lib/

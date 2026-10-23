@@ -1,1 +1,2 @@
-Generic single-database configuration.
+Alembic migrations for Marginalia. Run `uv run alembic upgrade head` (DATABASE_URL comes from
+the environment or .env), and `uv run alembic revision --autogenerate -m "..."` after changing models.

@@ -1,73 +1,74 @@
-import os
-from typing import Literal, Optional, List
+from pathlib import Path
+from typing import Literal
 
-from dotenv import find_dotenv
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+BASE_DIR = Path(__file__).resolve().parent
+REPO_DIR = BASE_DIR.parent
+
+Effort = Literal["low", "medium", "high"]
 
 
 class Settings(BaseSettings):
-    # Path settings
-    BASE_DIR: str = os.path.abspath(os.path.dirname(__file__))
-    PDF_CACHE_DIR = os.path.join(BASE_DIR, "cache")  # Where to save pdfs
-    DATA_DIR = os.path.join(BASE_DIR, "data")  # Where to save data
-    PROMPT_TEMPLATE_DIR: str = os.path.join(BASE_DIR, "llm", "templates")
-    EXAMPLE_JSON_DIR: str = os.path.join(BASE_DIR, "llm", "examples")
-
-    # Database
-    DATABASE_URL: str = "postgresql://localhost/textbook"
-    DEBUG: bool = False
-
-    # Content
-    SECTIONS_PER_LESSON: int = 30  # Lower this to make books shorter
-    TOTAL_OUTLINE_ITEMS: int = 40  # How many chapters to include in outline
-    SUBSECTIONS_PER_ITEM: int = 3  # subsections per chapter
-    SECTIONS_PER_GENERATION: int = 2 # How many sections to generate in one prompt
-    MAX_DOWNLOAD_SIZE: int = 6 * 1024 * 1024  # Max pdf size to download, 6 MB
-    FINETUNED: bool = False # If we're using a finetuned textbook gen model
-    INCLUDE_EXAMPLES: bool = (
-        True  # Include examples in prompts, False with custom model
+    model_config = SettingsConfigDict(
+        # local.env is kept for compatibility with textbook_quality setups
+        env_file=(REPO_DIR / "local.env", REPO_DIR / ".env"),
+        env_file_encoding="utf-8",
+        extra="ignore",
     )
 
-    # LLM
-    LLM_TYPES = {
-        "gpt-3.5-turbo": {"max_tokens": 4097},
-        "gpt-3.5-turbo-16k": {"max_tokens": 16384},
-        "gpt-3.5-turbo-instruct": {"max_tokens": 4097},
-        "llama": {"max_tokens": 8192},
-        "gpt-4": {"max_tokens": 8192},
-        "gpt-4-32k": {"max_tokens": 32768},
-    }
+    # Paths
+    PROMPT_TEMPLATE_DIR: Path = BASE_DIR / "llm" / "templates"
+    FRONTEND_DIST_DIR: Path = REPO_DIR / "frontend" / "dist"
 
-    LLM_TEMPERATURE: float = 0.5
-    LLM_TIMEOUT: int = 480
-    LLM_MAX_RESPONSE_TOKENS: int = 2048
-    OPENAI_KEY: str = ""
-    OPENAI_BASE_URL: Optional[str] = None
-    LLM_TYPE: str = "gpt-3.5-turbo"
-    LLM_INSTRUCT_TYPE: str = "gpt-3.5-turbo-instruct"
-    LLM_EXTENDED_TYPE: str = "gpt-3.5-turbo-16k"
+    # Database (any Postgres, including Supabase)
+    DATABASE_URL: str = "postgresql://marginalia:marginalia@localhost:5432/marginalia"
+    # Set when connecting through PgBouncer in transaction mode (e.g. Supabase's pooler on
+    # port 6543). Left unset, it is switched on automatically for that port.
+    DATABASE_PGBOUNCER: bool | None = None
+    DEBUG: bool = False
+
+    # LLM
+    LLM_PROVIDER: Literal["anthropic", "openai", "fake"] = "anthropic"
+    LLM_MODEL: str | None = None  # Overrides the provider's default model
+    LLM_TIMEOUT: float = 600
+    LLM_MAX_RETRIES: int = 2
+    LLM_CACHE: bool = False  # Reuse stored responses for identical requests (the CLI enables it)
+    ANTHROPIC_API_KEY: str | None = None  # Falls back to the SDK's own credential lookup
+    ANTHROPIC_BASE_URL: str | None = None
+    # Retry requests declined by Claude's safety classifiers on Anthropic's recommended
+    # fallback model (server-side fallbacks).
+    ANTHROPIC_REFUSAL_FALLBACKS: bool = True
+    OPENAI_API_KEY: str | None = None
+    OPENAI_BASE_URL: str | None = None  # For OpenAI-compatible servers (vLLM, Ollama, ...)
+    # "chat" uses Chat Completions, which most OpenAI-compatible servers implement.
+    OPENAI_API_MODE: Literal["responses", "chat"] = "responses"
+    FAKE_LLM_DELAY: float = 0.0  # Seconds between streamed chunks from the fake provider
+
+    # How hard the model thinks for each task (provider effort / reasoning effort)
+    EFFORT_DIAGNOSTICS: Effort = "low"
+    EFFORT_PLAN: Effort = "medium"
+    EFFORT_RESEARCH: Effort = "low"
+    EFFORT_SECTION: Effort = "medium"
+    EFFORT_TUTOR: Effort = "low"
+
+    # Research notes gathered with the provider's web search before writing a section
+    RESEARCH_BACKEND: Literal["web", "none"] = "web"
+    RESEARCH_MAX_SEARCHES: int = 3
 
     # Generation
-    VALID_GENERATED_COMPONENTS = Literal["text", "example", "exercise", "section"]
-    VALID_COMPONENTS = Literal["text", "example", "exercise", "section"]
+    PREFETCH_NEXT_SECTION: bool = True
+    GENERATION_STALE_AFTER_SECONDS: int = 900  # A stuck "generating" section can be retried
 
-    # Retrieval backend service
-    SERPLY_KEY: str = ""
-    SERPAPI_KEY: str = ""
-    SEARCH_BACKEND: Optional[str] = "serply"
-    CUSTOM_SEARCH_SERVER: Optional[str] = None
-    CUSTOM_SEARCH_TOKEN: Optional[str] = None
-    CUSTOM_SEARCH_TYPES: Optional[List[str]] = ["wiki"]
-    CONTEXT_BLOCK_SIZE: int = 2200  # Characters per text block
-
-    # General
-    RAY_CACHE_PATH: Optional[str] = None # Where to save ray cache
-    RAY_DASHBOARD_HOST: str = "127.0.0.1"
-    RAY_CORES_PER_WORKER = 1 # How many cpu cores to allocate per worker
-    PROCESS_CHUNK_SIZE = 3000 # How many rows to process in a single chunk
-
-    class Config:
-        env_file = find_dotenv("local.env")
+    @property
+    def default_model(self) -> str:
+        if self.LLM_MODEL:
+            return self.LLM_MODEL
+        return {
+            "anthropic": "claude-opus-5-5",
+            "openai": "gpt-6.1-sol",
+            "fake": "fake-tutor-1",
+        }[self.LLM_PROVIDER]
 
 
 settings = Settings()
