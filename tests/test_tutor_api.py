@@ -35,7 +35,7 @@ async def test_highlight_and_ask_creates_an_anchored_thread(client):
     assert thread["quote"] == payload["quote"] and thread["suffix"] == payload["suffix"]
     assert [m["role"] for m in thread["messages"]] == ["learner", "tutor"]
     assert thread["messages"][0]["content"] == "Why does this matter?"
-    assert payload["quote"] in thread["messages"][1]["content"]
+    assert payload["quote"].strip() in thread["messages"][1]["content"]
     listed = (await client.get(f"/api/sections/{section['id']}/threads")).json()
     assert [t["id"] for t in listed] == [thread["id"]]
 
@@ -121,6 +121,11 @@ async def test_asking_needs_a_written_section_and_a_real_block(client):
 
     response = await client.post(
         f"/api/sections/{section['id']}/threads", json=payload | {"question": "   "}
+    )
+    assert response.status_code == 422
+
+    response = await client.post(
+        f"/api/sections/{section['id']}/threads", json=payload | {"quote": "  "}
     )
     assert response.status_code == 422
 

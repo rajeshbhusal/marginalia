@@ -2,14 +2,21 @@ import uuid
 from datetime import datetime
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field, StringConstraints
 
 Question = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=2000)]
 
 
+def _not_blank(value: str) -> str:
+    if not value.strip():
+        raise ValueError("must not be blank")
+    return value
+
+
 class ThreadCreate(BaseModel):
     block_id: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=64)]
-    quote: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=2000)]
+    # Kept exactly as selected (not stripped) so it lines up with its prefix and suffix
+    quote: Annotated[str, Field(min_length=1, max_length=2000), AfterValidator(_not_blank)]
     # A little of the text before and after the quote, to find the passage again
     prefix: str = Field(default="", max_length=200)
     suffix: str = Field(default="", max_length=200)

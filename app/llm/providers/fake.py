@@ -135,16 +135,16 @@ def _diagnostics(meta: dict[str, Any]) -> dict:
 
 MODULE_TEMPLATES = [
     (
-        "Foundations of {topic}",
+        "Foundations",
         "The vocabulary and core ideas everything else builds on.",
         [
-            ("What {topic} is and why it matters", "A plain-language definition and its uses."),
-            ("The core vocabulary", "The handful of terms you'll meet everywhere."),
+            ("The big picture", "What the subject is about and why it matters."),
+            ("Core vocabulary", "The handful of terms you'll meet everywhere."),
             ("A first worked example", "One small case, worked end to end."),
         ],
     ),
     (
-        "How {topic} works",
+        "Under the hood",
         "The mechanism underneath, from intuition to detail.",
         [
             ("The key mechanism", "What actually happens, step by step."),
@@ -153,7 +153,7 @@ MODULE_TEMPLATES = [
         ],
     ),
     (
-        "{topic} in practice",
+        "Putting it into practice",
         "Using what you've learned on realistic problems.",
         [
             ("A step-by-step walkthrough", "A realistic task, solved carefully."),
@@ -175,21 +175,26 @@ MODULE_TEMPLATES = [
 SHAPE_BY_DEPTH = {"overview": (3, 2), "practitioner": (3, 3), "rigorous": (4, 3)}
 
 
-def _modules(topic: str, depth: str, shorter: bool = False) -> list[dict]:
+def _modules(depth: str, shorter: bool = False) -> list[dict]:
     module_count, section_count = SHAPE_BY_DEPTH.get(depth, (3, 3))
     if shorter:
         module_count, section_count = max(2, module_count - 1), max(2, section_count - 1)
     return [
         {
-            "title": title.format(topic=topic),
+            "title": title,
             "summary": summary,
             "sections": [
-                {"title": s_title.format(topic=topic.lower()), "summary": s_summary}
+                {"title": s_title, "summary": s_summary}
                 for s_title, s_summary in sections[:section_count]
             ],
         }
         for title, summary, sections in MODULE_TEMPLATES[:module_count]
     ]
+
+
+def _describe(depth: str, topic: str) -> str:
+    article = "An" if depth == "overview" else "A"
+    return f"{article} {depth} course on {topic[0].lower() + topic[1:]}"
 
 
 def _plan(meta: dict[str, Any]) -> dict:
@@ -199,29 +204,28 @@ def _plan(meta: dict[str, Any]) -> dict:
     return {
         "profile": {
             "level": level,
-            "summary": f"Starting point for {topic.lower()}: comfortable with general reasoning, "
-            "new to the specifics.",
+            "summary": "Comfortable with general reasoning, new to the specifics of the topic.",
             "strengths": ["Reasoning about evidence"],
-            "gaps": [f"Core vocabulary of {topic.lower()}"],
+            "gaps": ["Core vocabulary"],
         },
         "title": topic,
-        "description": f"A {meta.get('depth', 'practitioner')} course on {topic.lower()}, "
-        f"written for a {meta.get('style', 'reading').replace('_', '-')} learner.",
-        "modules": _modules(topic, meta.get("depth", "practitioner")),
+        "description": f"{_describe(meta.get('depth', 'practitioner'), topic)}, written for a "
+        f"{meta.get('style', 'reading').replace('_', '-')} learner.",
+        "modules": _modules(meta.get("depth", "practitioner")),
     }
 
 
 def _outline(meta: dict[str, Any]) -> dict:
     topic = _topic(meta.get("goal", ""))
     instructions = meta.get("instructions", "").strip()
-    description = f"A {meta.get('depth', 'practitioner')} course on {topic.lower()}."
+    description = f"{_describe(meta.get('depth', 'practitioner'), topic)}."
     if instructions:
         description += f" Revised: {instructions}"
     return {
         "title": meta.get("current_title") or topic,
         "description": description,
         "modules": _modules(
-            topic, meta.get("depth", "practitioner"), shorter="short" in instructions.lower()
+            meta.get("depth", "practitioner"), shorter="short" in instructions.lower()
         ),
     }
 
@@ -234,7 +238,7 @@ def _section(meta: dict[str, Any]) -> dict:
     blocks: list[dict] = [
         {
             "type": "text",
-            "markdown": f"**{title}** is one of the ideas {course.lower()} rests on. Start with "
+            "markdown": f"**{title}** is one of the ideas *{course}* rests on. Start with "
             "the intuition: every system worth studying turns some *inputs* into some "
             "*outputs*, and understanding it means being able to predict how changing one "
             "changes the other.\n\nThis demo text was written by Marginalia's offline fake "

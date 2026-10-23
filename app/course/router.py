@@ -4,6 +4,7 @@ from fastapi import APIRouter, Response
 
 from app import jobs
 from app.course import generation, service
+from app.course.demo import load_demo_course
 from app.course.schemas import (
     CourseCreate,
     CourseListItem,
@@ -31,6 +32,13 @@ async def list_courses(db: DBSession) -> list[CourseListItem]:
 async def create_course(data: CourseCreate, db: DBSession) -> CourseOut:
     """Start a course: writes the diagnostic questions (takes a few seconds)."""
     course = await service.create_course(db, data)
+    return await service.course_out(db, course)
+
+
+@router.post("/courses/demo", status_code=201)
+async def create_demo_course(db: DBSession) -> CourseOut:
+    """Add the hand-written demo course, which can be read without an API key."""
+    course = await load_demo_course(db)
     return await service.course_out(db, course)
 
 
