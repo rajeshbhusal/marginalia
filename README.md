@@ -1,4 +1,20 @@
-# Textbook Quality
+# Marginalia
+
+Marginalia is an open-source, personalised "learn anything" app. Tell it what you want to learn, how deep you want to go (overview, practitioner or rigorous) and how you like to learn (for example, visually). It builds a course outline you can edit, writes each section just in time as you reach it, and lets you highlight any passage and ask a question in the margin, where an AI tutor answers in context.
+
+> **Status:** early development. The app is being built on top of the textbook generator this repository was imported from (see [Credits](#credits)); the original generator's documentation is kept below until it is replaced.
+
+## Credits
+
+Marginalia started as an import of [**textbook_quality**](https://github.com/VikParuchuri/textbook_quality) by [**Vik Paruchuri**](https://github.com/VikParuchuri), released under the MIT License. Its course-generation pipeline, content-block model, prompt ideas and database layer are the foundation Marginalia builds on, and its commit history is preserved in this repository. Thank you, Vik.
+
+Marginalia is inspired by Endless (endless.academy), an earlier learning product by Vik Paruchuri. **Marginalia is an independent project and is not affiliated with, endorsed by, or sponsored by Vik Paruchuri or Endless.** See [NOTICE](NOTICE) for full attribution.
+
+## Licence
+
+MIT. See [LICENSE](LICENSE), which keeps the original textbook_quality copyright notice alongside Marginalia's.
+
+## Legacy: textbook_quality dataset generator
 
 This project generates very long, textbook quality pretraining data.  [Here's](https://huggingface.co/datasets/vikp/textbook_quality_programming) a 70M token example.  It can run generations in parallel, against OpenAI, or your own API.  It can generate the topics from scratch, or use a set of seeds you provide.
 
@@ -6,14 +22,14 @@ The generator uses retrieval to improve quality.  By default, it will use [Serpl
 
 The core is extensible, so you can add your own adaptors to connect to new APIs and retrieval backends.
 
-# Installing
+### Installing
 
-## Prerequisites
+#### Prerequisites
 
 - Python 3.9+ (ideally 3.11)
 - You will need postgres installed. You can install it with `brew install postgres` on a Mac.
 
-## Setup
+#### Setup
 
 - `psql postgres -c "create database textbook;"`
 - `git clone https://github.com/VikParuchuri/textbook_quality.git`
@@ -21,13 +37,13 @@ The core is extensible, so you can add your own adaptors to connect to new APIs 
 - `poetry install`
 - `invoke migrate-dev`
 
-## Configuration
+#### Configuration
 
 First, create a `local.env` file in the root directory of the repo to store your secret keys.  Alternatively, you can set any key below as an env var.
 
 You can see all the available configuration values in `app/settings.py`.
 
-### With OpenAI and retrieval (highest quality)
+##### With OpenAI and retrieval (highest quality)
 
 - Add your OpenAI key, like `OPENAI_KEY=sk-xxxxxx`
 - Add your serply key (`SERPLY_KEY="..."`) or serpapi key (`SERPAPI_KEY="..."`).
@@ -35,7 +51,7 @@ You can see all the available configuration values in `app/settings.py`.
 
 By default, this will use `gpt-3.5`.  You can use `gpt-4` by setting the env vars `LLM_TYPE`, `LLM_INSTRUCT_TYPE` to `gpt-4`.  You may be able to get away with setting `LLM_EXTENDED_TYPE` to `gpt-4` as well, but you may need longer than 8k context.
 
-### With vllm or other openai-compatible API and retrieval
+##### With vllm or other openai-compatible API and retrieval
 
 - Set `OPENAI_KEY` to the value of your API key, or a dummy value.
 - Set `OPENAI_BASE_URL` to the url of your API (like https://vllm-api.com/v1)
@@ -45,15 +61,15 @@ By default, this will use `gpt-3.5`.  You can use `gpt-4` by setting the env var
 
 The generator ideally needs a context length of up to `16k`, but you can get away with `12k` if you need to.  If you've finetuned your own model for textbook gen (based on the prompts cached in this repo), you can use the `FINETUNED` and `INCLUDE_EXAMPLES` settings to reduce token usage.
 
-### Without retrieval
+##### Without retrieval
 
 - Set `SEARCH_BACKEND=none`
 
-# Usage
+### Usage
 
 There are three main scripts in the repo.  You can run each script on the output of the previous one.  All outputs will appear by default in `app/data`, which is the specified `DATA_DIR` in settings.
 
-## Generate topics from scratch
+#### Generate topics from scratch
 
 You enter a subject, a file you want to save the topics to, and the number of iterations.  The topics will be deduplicated.
 
@@ -61,7 +77,7 @@ Usage example:
 
 `python topic_generator.py "computer science with python" python_cs_titles.json --iterations 50`
 
-## Augment topics from seeds
+#### Augment topics from seeds
 
 Take a file with existing seeds (in a flat json list), and augment them.  You can pass in the output file from the topic generator as the seed file, or use your own seeds.  Domain is an optional flag to constrain the topics within a domain.
 
@@ -71,9 +87,9 @@ Usage example:
 
 `python topic_augmentor.py python_titles.json python_topics.json --domain python`
 
-## Generate textbooks
+#### Generate textbooks
 
-### From titles
+##### From titles
 
 This will take a file with a flat json list of topics, and generate one textbook per topic.  The workers flag controls the number of parallel generations.  Lower it if you hit rate limits.
 
@@ -89,7 +105,7 @@ You can see all options by running `python book_generator.py --help`.
 
 Note that courses are cached by default, so regenerating a course with the same name twice will not hit the API again.  The cache is specific to each model and each topic.  You can skip the cache by using the `--revision` option to specify a revision number for the courses.
 
-### From outlines
+##### From outlines
 
 You can also generate a book from an existing outline by creating a jsonl file with the following fields:
 
@@ -97,7 +113,7 @@ You can also generate a book from an existing outline by creating a jsonl file w
 - `outline` - The outline of the book, as a flat json list.  This needs to be in a specific format, see "clean table of contents" below.
 - `queries` - Up to 2 search queries to use for retrieval.  If you don't want to use retrieval, set this to an empty list.
 
-## Clean tables of contents
+#### Clean tables of contents
 
 This will take in a jsonl file with an existing table of contents and title, and process it into the correct format for book generation.
 
@@ -111,7 +127,7 @@ Usage example:
 - `toc` - a string containing the table of contents.  This can be poorly formatted
 
 
-# Extending
+### Extending
 
 You can extend this to add in new LLM adaptors, retrieval methods, or tasks.  PRs are very welcome.
 
@@ -119,7 +135,7 @@ You can extend this to add in new LLM adaptors, retrieval methods, or tasks.  PR
 - Retrieval methods are in `app/services/adaptors`.  You may also need to adjust settings in `services/generators/pdf.py`
 - Tasks are in `app/llm/generators`
 
-# Debugging
+### Debugging
 
 By default, a lot of exceptions will be hidden to avoid console noise.  Use `DEBUG=true` to display them, like this:
 
