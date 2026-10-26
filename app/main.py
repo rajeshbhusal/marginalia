@@ -7,7 +7,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
-from app import jobs
+from app import auth, jobs
 from app.course.router import router as course_router
 from app.db.session import DBSession, dispose_engine
 from app.errors import ConflictError, NotFoundError
@@ -88,6 +88,7 @@ def _mount_frontend(app: FastAPI) -> None:
 
 
 def create_app() -> FastAPI:
+    auth.check_settings()
     logging.basicConfig(
         level=logging.DEBUG if settings.DEBUG else logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
@@ -106,6 +107,7 @@ def create_app() -> FastAPI:
     async def llm_error(request: Request, exc: LLMError) -> JSONResponse:
         return JSONResponse(status_code=_llm_error_status(exc), content={"detail": str(exc)})
 
+    auth.install(app)  # Before the single-page app's catch-all route
     app.include_router(meta_router)
     app.include_router(course_router)
     app.include_router(tutor_router)

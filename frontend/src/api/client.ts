@@ -24,6 +24,11 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     ...init,
     headers: { "Content-Type": "application/json", ...init.headers },
   });
+  if (response.status === 401 && path !== "/health") {
+    // The access gate's login expired (only when the server has a password set)
+    const here = window.location.pathname + window.location.search;
+    window.location.assign(`/login?next=${encodeURIComponent(here)}`);
+  }
   if (!response.ok) {
     throw new ApiError(response.status, await errorMessage(response));
   }
