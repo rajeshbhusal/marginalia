@@ -12,6 +12,7 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 
 import app.db.base_model
+from app.db.migrations import grant_app_role
 
 # revision identifiers, used by Alembic.
 revision = "0001"
@@ -143,12 +144,10 @@ def upgrade() -> None:
     )
     # ### end Alembic commands ###
 
-    # Supabase publishes tables in the public schema through its auto-generated REST API.
-    # Row-level security with no policies closes that route; Marginalia connects as the tables'
-    # owner, which bypasses RLS, so the app is unaffected. On plain Postgres this is harmless.
-    if op.get_bind().dialect.name == "postgresql":
-        for table in TABLES:
-            op.execute(f'ALTER TABLE "{table}" ENABLE ROW LEVEL SECURITY')
+    # Row-level security on every table, so Supabase's auto-generated REST API can't reach
+    # them (Marginalia connects as the tables' owner, which RLS doesn't restrict), plus
+    # explicit grants and an RLS policy for DB_APP_ROLE when it is set.
+    grant_app_role(TABLES)
 
 
 def downgrade() -> None:

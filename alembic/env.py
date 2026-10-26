@@ -5,7 +5,7 @@ from alembic import context
 from sqlmodel import SQLModel
 
 import app.db.tables  # noqa: F401 - registers every table on SQLModel.metadata
-from app.db.session import create_engine, get_async_db_url
+from app.db.session import create_engine, db_schema, get_async_db_url
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -17,6 +17,9 @@ if config.config_file_name is not None:
 
 target_metadata = SQLModel.metadata
 
+# Everything, including Alembic's own version table, lives in DB_SCHEMA (default public)
+SCHEMA_OPTS = {"version_table_schema": db_schema()}
+
 
 def run_migrations_offline() -> None:
     """Emit the migration SQL for DATABASE_URL without connecting to it."""
@@ -25,6 +28,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        **SCHEMA_OPTS,
     )
 
     with context.begin_transaction():
@@ -32,7 +36,7 @@ def run_migrations_offline() -> None:
 
 
 def do_run_migrations(connection):
-    context.configure(connection=connection, target_metadata=target_metadata)
+    context.configure(connection=connection, target_metadata=target_metadata, **SCHEMA_OPTS)
 
     with context.begin_transaction():
         context.run_migrations()

@@ -34,20 +34,36 @@ def uses_pgbouncer(url: str) -> bool:
     return url.startswith("postgresql+asyncpg://") and urlsplit(url).port == 6543
 
 
+def db_schema() -> str | None:
+    """The configured schema, or None for Postgres' default (public)."""
+    return None if settings.DB_SCHEMA == "public" else settings.DB_SCHEMA
+
+
 def create_engine(url: str | None = None) -> AsyncEngine:
     url = get_async_db_url(url)
+    schema = db_schema()
+    is_postgres = url.startswith("postgresql+asyncpg://")
+    kwargs: dict = {}
+    connect_args: dict = {}
     if uses_pgbouncer(url):
-        # PgBouncer in transaction mode can't keep prepared statements across transactions,
-        # so disable asyncpg's statement cache and let PgBouncer do the pooling.
-        return create_async_engine(
-            url,
-            poolclass=NullPool,
-            connect_args={
-                "statement_cache_size": 0,
-                "prepared_statement_name_func": lambda: f"__asyncpg_{uuid4()}__",
-            },
-        )
-    return create_async_engine(url, pool_pre_ping=True)
+        # PgBouncer/Supavisor in transaction mode can't keep prepared statements across
+        # transactions, so disable asyncpg's statement caches and let the pooler do the pooling.
+        kwargs["poolclass"] = NullPool
+        connect_args |= {
+            "statement_cache_size": 0,
+            "prepared_statement_cache_size": 0,
+            "prepared_statement_name_func": lambda: f"__asyncpg_{uuid4()}__",
+        }
+    else:
+        kwargs["pool_pre_ping"] = True
+    if schema and is_postgres:
+        # Only the app's schema is on the search path, so nothing can land in public by mistake
+        # (session-mode poolers and direct connections keep this setting).
+        connect_args["server_settings"] = {"search_path": schema}
+        # Qualify every table with the schema in generated SQL too, which also works where
+        # startup settings like search_path aren't kept (transaction-mode poolers).
+        kwargs["execution_options"] = {"schema_translate_map": {None: schema}}
+    return create_async_engine(url, connect_args=connect_args, **kwargs)
 
 
 _engine: AsyncEngine | None = None

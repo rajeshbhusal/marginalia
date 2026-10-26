@@ -1,6 +1,8 @@
+import re
 from pathlib import Path
 from typing import Literal
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -26,7 +28,20 @@ class Settings(BaseSettings):
     # Set when connecting through PgBouncer in transaction mode (e.g. Supabase's pooler on
     # port 6543). Left unset, it is switched on automatically for that port.
     DATABASE_PGBOUNCER: bool | None = None
+    # Postgres schema that holds every Marginalia table, including Alembic's version table.
+    # Use a dedicated schema (e.g. "marginalia") to share a database such as a Supabase project.
+    # The schema must already exist; migrations never create anything outside it.
+    DB_SCHEMA: str = "public"
+    # Login role the app connects as; when set, migrations GRANT it access to what they create.
+    DB_APP_ROLE: str | None = None
     DEBUG: bool = False
+
+    # Access gate: when a password is set, every page and API route needs it (except
+    # /api/health). The login is kept in a signed, httpOnly cookie.
+    MARGINALIA_ACCESS_PASSWORD: str | None = None
+    SESSION_SECRET: str | None = None  # Signs the login cookie; required with a password
+    SESSION_COOKIE_SECURE: bool = True  # Browsers treat http://localhost as secure too
+    SESSION_MAX_AGE_DAYS: int = 30
 
     # LLM
     LLM_PROVIDER: Literal["anthropic", "openai", "fake"] = "anthropic"
@@ -59,6 +74,18 @@ class Settings(BaseSettings):
     # Generation
     PREFETCH_NEXT_SECTION: bool = True
     GENERATION_STALE_AFTER_SECONDS: int = 900  # A stuck "generating" section can be retried
+
+    @field_validator("DB_SCHEMA", "DB_APP_ROLE")
+    @classmethod
+    def _plain_identifier(cls, value: str | None) -> str | None:
+        # Used in DDL and GRANT statements, so only plain lower-case identifiers are allowed
+        if value is not None and not re.fullmatch(r"[a-z_][a-z0-9_]{0,62}", value):
+            raise ValueError("must be a plain lower-case Postgres identifier")
+        return value
+
+    @property
+    def access_gate_enabled(self) -> bool:
+        return bool(self.MARGINALIA_ACCESS_PASSWORD)
 
     @property
     def default_model(self) -> str:

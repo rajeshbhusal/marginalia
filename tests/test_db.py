@@ -36,3 +36,35 @@ def test_tz_datetime_stores_utc_and_returns_aware_values():
     assert stored == datetime(2026, 1, 1, 7, tzinfo=UTC)
     naive = datetime(2026, 1, 1, 7)
     assert column.process_result_value(naive, None).tzinfo == UTC
+
+
+def test_engine_targets_the_configured_schema(monkeypatch):
+    from app.db.session import create_engine
+    from app.settings import settings
+
+    monkeypatch.setattr(settings, "DB_SCHEMA", "marginalia")
+    engine = create_engine("postgresql://u:p@db:5432/m")
+    assert engine.sync_engine.get_execution_options()["schema_translate_map"] == {
+        None: "marginalia"
+    }
+    monkeypatch.setattr(settings, "DB_SCHEMA", "public")
+    engine = create_engine("postgresql://u:p@db:5432/m")
+    assert "schema_translate_map" not in engine.sync_engine.get_execution_options()
+
+
+def test_schema_and_role_names_must_be_plain_identifiers():
+    from pydantic import ValidationError
+
+    from app.settings import Settings
+
+    with pytest.raises(ValidationError):
+        Settings(DB_SCHEMA='x"; drop table course; --')
+    assert Settings(DB_SCHEMA="marginalia", DB_APP_ROLE="marginalia_app").DB_SCHEMA
+
+
+def test_every_migration_grants_the_app_role():
+    from pathlib import Path
+
+    versions = Path(__file__).resolve().parent.parent / "alembic" / "versions"
+    for migration in versions.glob("*.py"):
+        assert "grant_app_role(" in migration.read_text(), migration.name
