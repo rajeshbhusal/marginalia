@@ -30,5 +30,6 @@ COPY --from=web /web/dist ./frontend/dist
 RUN useradd --create-home --uid 1000 marginalia && chown -R marginalia /app
 USER marginalia
 EXPOSE 8000
-# Apply migrations, then start the server
-CMD ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers"]
+# Apply migrations, then start the server on $PORT (set by Railway and similar hosts; 8000
+# otherwise). The app sits behind the host's proxy, so trust its forwarded headers.
+CMD ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --proxy-headers --forwarded-allow-ips='*'"]

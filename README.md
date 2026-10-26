@@ -31,7 +31,7 @@ Open <http://localhost:8000>. Postgres runs in its own container, and migrations
 
 No API key yet? Set `LLM_PROVIDER=fake` in `.env` to run with an offline stand-in model that writes clearly generic placeholder content, then click **Try the demo course** on the home page. The demo course is a real, hand-written course on Bayesian thinking (with diagrams, maths, code, exercises and a margin thread) that needs no model to read.
 
-> **Run it locally or behind your own login.** This version has no user accounts: anyone who can reach the app can read every course and create new ones, which spends your API credits.
+> **Run it locally or behind a password.** This version has no user accounts: anyone who can reach the app can read every course and create new ones, which spends your API credits. Before you host it anywhere, set `MARGINALIA_ACCESS_PASSWORD` (see [Hosting on Railway](#hosting-on-railway)).
 
 ## Local development
 
@@ -60,7 +60,15 @@ Settings come from environment variables or `.env` (see [`.env.example`](.env.ex
 | `RESEARCH_BACKEND` | `web` | `web` researches each section with the provider's web search before writing it; `none` skips research |
 | `RESEARCH_MAX_SEARCHES` | `3` | Web searches allowed per section |
 | `EFFORT_*` | `low` / `medium` | How hard the model thinks for diagnostics, planning, research, sections and the tutor |
-| `DATABASE_URL` | local Postgres | Any Postgres connection string, including Supabase's |
+| `DATABASE_URL` | local Postgres | Any Postgres connection string, including Supabase's (`postgres://` and `postgresql://` both work) |
+| `DB_SCHEMA` | `public` | Postgres schema for every Marginalia table, including Alembic's version table. It must already exist |
+| `DB_APP_ROLE` | | Login role the app uses; migrations grant it access to `DB_SCHEMA` and add an RLS policy for it |
+| `DATABASE_PGBOUNCER` | auto | `true` for a transaction-mode pooler (turns off prepared-statement caches). Automatic on port 6543 |
+| `MARGINALIA_ACCESS_PASSWORD` | | When set, every page and API route needs this password (except `/api/health`) |
+| `SESSION_SECRET` | | Signs the login cookie. Required with a password; use a long random value |
+| `SESSION_COOKIE_SECURE` | `true` | Send the login cookie over HTTPS only (browsers treat `http://localhost` as secure) |
+| `SESSION_MAX_AGE_DAYS` | `30` | How long a login lasts |
+| `PORT` | `8000` | Port the container listens on (Railway sets it) |
 | `LLM_CACHE` | `false` | Reuse stored responses for identical requests (the CLI turns this on) |
 
 **Costs.** With the defaults, each section costs one research call (with up to three web searches) and one writing call, and tutor questions are `low`-effort calls that reuse a cached copy of the section. Sections are only written when opened, so an abandoned course costs little. For a cheaper setup, use `LLM_MODEL=claude-sonnet-5-5` and `RESEARCH_BACKEND=none`.
@@ -73,6 +81,34 @@ Marginalia works with any Postgres, including [Supabase](https://supabase.com/):
 2. Set `DATABASE_URL` to it in `.env` (`postgres://` and `?sslmode=require` forms are both fine) and run `uv run alembic upgrade head`.
 
 The migration enables row-level security on Marginalia's tables, so Supabase's auto-generated REST API doesn't expose them. The app connects as the tables' owner, which RLS doesn't restrict.
+
+**Sharing a Supabase project with other apps.** Keep Marginalia in its own schema, used by a login role that owns only that schema:
+
+1. As an admin, create the role and schema once, e.g. `create role marginalia_app login password '…';` then `create schema marginalia authorization marginalia_app;`. Don't add the schema to the Data API's exposed schemas.
+2. Set `DB_SCHEMA=marginalia` and `DB_APP_ROLE=marginalia_app`, and connect as that role. With Supavisor the user name is `marginalia_app.<project-ref>`; the session pooler on port 5432 is IPv4 and keeps prepared statements working.
+
+Every table, index, RLS policy and Alembic's `alembic_version` table is created in `DB_SCHEMA`, and only `DB_SCHEMA` is on the connection's search path, so nothing lands in `public`. Each migration ends with `grant_app_role(...)`, which grants `DB_APP_ROLE` usage on the schema and access to its tables and sequences, and gives new tables an RLS policy for that role only.
+
+## Hosting on Railway
+
+The repo includes [`railway.json`](railway.json): Railway builds the `Dockerfile`, runs `alembic upgrade head` as a pre-deploy step (the container also runs it on start, which is a no-op once applied), checks `/api/health`, and the app listens on Railway's `$PORT`.
+
+1. Create a service from this GitHub repo (pick the branch to deploy) and generate a public domain for it.
+2. Set these variables on the service. Keep secrets in Railway's variables, never in the repo:
+
+| Variable | Value |
+|---|---|
+| `DATABASE_URL` | Supabase session pooler string for the app role, e.g. `postgresql://marginalia_app.<project-ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres?sslmode=require` (or a Railway Postgres `${{Postgres.DATABASE_URL}}`) |
+| `DB_SCHEMA` | `marginalia` |
+| `DB_APP_ROLE` | `marginalia_app` |
+| `MARGINALIA_ACCESS_PASSWORD` | The password testers type in |
+| `SESSION_SECRET` | A long random string, e.g. from `openssl rand -hex 32` |
+| `ANTHROPIC_API_KEY` | Your Claude API key |
+| `LLM_MODEL` | Optional, e.g. `claude-sonnet-5-5` to cut costs |
+
+3. Deploy from the dashboard, or with the CLI: `railway up` from a checkout of the branch.
+
+Run a single replica: background generation jobs live in the app process.
 
 ## Command line
 
