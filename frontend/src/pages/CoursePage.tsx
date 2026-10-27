@@ -1,18 +1,17 @@
 import clsx from "clsx";
-import { Check } from "lucide-react";
 import { useState } from "react";
-import { Navigate, useNavigate, useParams } from "react-router";
+import { Link, Navigate, useNavigate, useParams } from "react-router";
 import { ApiError, api } from "../api/client";
 import { useCourse, useCourseMutation } from "../api/hooks";
 import type { Course, DiagnosticAnswer } from "../api/types";
 import { OutlineEditor } from "../components/outline/OutlineEditor";
-import { Button, Card, ErrorNotice, Spinner } from "../components/ui";
+import { Button, buttonClasses, ErrorNotice, PageSkeleton, Spinner } from "../components/ui";
 
 export function CoursePage() {
   const { courseId = "" } = useParams();
   const course = useCourse(courseId);
 
-  if (course.isPending) return <PageSpinner />;
+  if (course.isPending) return <PageSkeleton />;
   if (course.isError) {
     const missing = course.error instanceof ApiError && course.error.status === 404;
     return (
@@ -20,6 +19,17 @@ export function CoursePage() {
         <ErrorNotice
           title={missing ? "Course not found" : "Couldn't load this course"}
           message={missing ? "It may have been deleted." : course.error.message}
+          action={
+            missing ? (
+              <Link to="/" className={buttonClasses("secondary", "sm")}>
+                My courses
+              </Link>
+            ) : (
+              <Button variant="secondary" size="sm" onClick={() => void course.refetch()}>
+                Try again
+              </Button>
+            )
+          }
         />
       </main>
     );
@@ -40,14 +50,6 @@ export function CoursePage() {
       return <Navigate to={`/courses/${data.id}/learn/${sectionId}`} replace />;
     }
   }
-}
-
-export function PageSpinner() {
-  return (
-    <div className="flex justify-center py-24 text-ink-subtle">
-      <Spinner className="size-6" />
-    </div>
-  );
 }
 
 type Choice = number | "unsure";
@@ -72,60 +74,60 @@ function DiagnosticView({ course }: { course: Course }) {
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-10 sm:px-6 sm:py-14">
-      <p className="text-sm font-medium text-brand-ink">{course.title}</p>
-      <h1 className="mt-1 font-serif text-3xl font-semibold tracking-tight">A few quick questions</h1>
-      <p className="mt-2 text-ink-muted">
+      <p className="text-sm font-medium text-ink-subtle">{course.title}</p>
+      <h1 className="mt-1 font-serif text-3xl font-semibold tracking-tighter text-ink">
+        A few quick questions
+      </h1>
+      <p className="mt-2 text-base text-pretty text-ink-muted">
         These help the course start where you are. Pick "I'm not sure" whenever you are: a guess
         tells us less than an honest "not sure".
       </p>
 
-      <div className="mt-8 space-y-4">
+      <div className="mt-10 space-y-10">
         {course.diagnostics.map((question, index) => (
-          <Card key={question.id} className="p-5 sm:p-6">
-            <fieldset>
-              <legend className="font-medium text-ink">
-                <span className="mr-2 text-ink-subtle">{index + 1}.</span>
-                {question.question}
-              </legend>
-              <div className="mt-4 space-y-2">
-                {[...question.options.map((option, i) => [i, option] as const), ["unsure", "I'm not sure"] as const].map(
-                  ([value, label]) => {
-                    const selected = choices[question.id] === value;
-                    return (
-                      <label
-                        key={String(value)}
-                        className={clsx(
-                          "flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-2.5 text-sm transition-colors",
-                          selected
-                            ? "border-brand bg-brand-soft/60 text-ink"
-                            : "border-line text-ink-muted hover:border-line-strong hover:text-ink",
-                          value === "unsure" && !selected && "border-dashed",
-                        )}
-                      >
-                        <input
-                          type="radio"
-                          name={question.id}
-                          checked={selected}
-                          onChange={() => setChoices((c) => ({ ...c, [question.id]: value }))}
-                          className="size-4 accent-[var(--brand)]"
-                        />
-                        {label}
-                      </label>
-                    );
-                  },
-                )}
-              </div>
-            </fieldset>
-          </Card>
+          <fieldset key={question.id}>
+            <legend className="mb-3 text-base font-semibold text-pretty text-ink">
+              <span className="mr-2 text-ink-subtle tabular-nums">{index + 1}.</span>
+              {question.question}
+            </legend>
+            <div className="space-y-2">
+              {[...question.options.map((option, i) => [i, option] as const), ["unsure", "I'm not sure"] as const].map(
+                ([value, label]) => {
+                  const selected = choices[question.id] === value;
+                  return (
+                    <label
+                      key={String(value)}
+                      className={clsx(
+                        "flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 text-sm transition-colors pointer-coarse:min-h-11",
+                        selected
+                          ? "border-brand bg-brand-soft text-ink ring-1 ring-brand"
+                          : "border-line bg-surface text-ink-muted hover:border-line-strong hover:text-ink",
+                        value === "unsure" && !selected && "border-dashed border-line-strong",
+                      )}
+                    >
+                      <input
+                        type="radio"
+                        name={question.id}
+                        checked={selected}
+                        onChange={() => setChoices((c) => ({ ...c, [question.id]: value }))}
+                        className="size-4 shrink-0 accent-[var(--brand)]"
+                      />
+                      {label}
+                    </label>
+                  );
+                },
+              )}
+            </div>
+          </fieldset>
         ))}
       </div>
 
       {submit.isError && (
-        <div className="mt-6">
-          <ErrorNotice message={submit.error.message} />
+        <div className="mt-8">
+          <ErrorNotice title="Couldn't send your answers" message={submit.error.message} />
         </div>
       )}
-      <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mt-10 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Button variant="ghost" onClick={() => send(true)} disabled={submit.isPending}>
           Skip the questions
         </Button>
@@ -145,20 +147,20 @@ function PlanningView({ course }: { course: Course }) {
   const steps = revising ? REVISING_STEPS : PLANNING_STEPS;
   return (
     <main className="mx-auto flex max-w-lg flex-col items-center px-4 py-24 text-center">
-      <Spinner className="size-8 text-brand-ink" />
-      <h1 className="mt-6 font-serif text-2xl font-semibold">
+      <Spinner className="size-8 text-brand" />
+      <h1 className="mt-6 font-serif text-2xl font-semibold tracking-tight text-ink" role="status">
         {revising ? "Revising your outline" : "Designing your course"}
       </h1>
-      <p className="mt-2 text-ink-muted">{course.goal}</p>
+      <p className="mt-2 text-pretty text-ink-muted">{course.goal}</p>
       <ul className="mt-8 space-y-2 text-left text-sm text-ink-muted">
         {steps.map((step) => (
-          <li key={step} className="flex items-center gap-2">
-            <Check className="size-4 text-ink-subtle" aria-hidden />
+          <li key={step} className="flex items-center gap-3">
+            <span className="size-1.5 shrink-0 rounded-full bg-ink-faint" aria-hidden />
             {step}
           </li>
         ))}
       </ul>
-      <p className="mt-8 text-xs text-ink-subtle">This usually takes under a minute.</p>
+      <p className="mt-8 text-sm text-ink-subtle">This usually takes under a minute.</p>
     </main>
   );
 }
@@ -172,14 +174,14 @@ function PlanningFailed({ course }: { course: Course }) {
         title="The course couldn't be planned"
         message={course.error ?? "Something went wrong."}
         action={
-          <div className="flex gap-2">
+          <>
             <Button variant="secondary" size="sm" onClick={() => navigate("/")}>
-              Back
+              My courses
             </Button>
             <Button size="sm" onClick={() => retry.mutate(undefined)} loading={retry.isPending}>
               Try again
             </Button>
-          </div>
+          </>
         }
       />
     </main>

@@ -34,9 +34,8 @@ import {
 import { AskButton, MarginColumn, type MarginEntry, MarginSheet } from "../components/reader/Margin";
 import { OutlineSidebar } from "../components/reader/OutlineSidebar";
 import { Composer, ThreadCard } from "../components/reader/ThreadCard";
-import { Badge, Button, ErrorNotice, Spinner } from "../components/ui";
+import { Badge, Button, ErrorNotice, PageSkeleton, Spinner } from "../components/ui";
 import { depthLabel, plural, STAGE_LABELS, styleLabel } from "../lib/labels";
-import { PageSpinner } from "./CoursePage";
 
 const DRAFT_ID = "draft";
 
@@ -68,7 +67,7 @@ export function ReaderPage() {
     if (status) void queryClient.invalidateQueries({ queryKey: queryKeys.course(courseId) });
   }, [status, courseId, queryClient]);
 
-  if (course.isPending || section.isPending) return <PageSpinner />;
+  if (course.isPending || section.isPending) return <PageSkeleton />;
   if (course.isError || section.isError) {
     const error = (course.error ?? section.error)!;
     const missing = error instanceof ApiError && error.status === 404;
