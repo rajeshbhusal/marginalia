@@ -1,5 +1,13 @@
 import clsx from "clsx";
-import { BookOpen, FlaskConical, Lightbulb, PencilLine, Sparkles, TriangleAlert } from "lucide-react";
+import {
+  BookOpen,
+  CircleCheck,
+  FlaskConical,
+  KeyRound,
+  Lightbulb,
+  PencilLine,
+  TriangleAlert,
+} from "lucide-react";
 import { useState } from "react";
 import type { Block, CalloutBlock, ExampleBlock, ExerciseBlock } from "../../api/types";
 import { CodeBlock } from "../markdown/CodeBlock";
@@ -27,10 +35,10 @@ export function BlockView({ block }: { block: Block }) {
 function Label({ icon: Icon, children }: { icon: typeof Lightbulb; children: string }) {
   return (
     <div
-      className="mb-2 flex items-center gap-1.5 font-sans text-xs font-semibold tracking-wide text-ink-3 uppercase"
+      className="mb-2 flex items-center gap-2 font-sans text-sm font-medium text-ink-muted"
       data-anchor-ignore
     >
-      <Icon className="size-3.5" aria-hidden />
+      <Icon className="size-4" aria-hidden />
       {children}
     </div>
   );
@@ -38,7 +46,7 @@ function Label({ icon: Icon, children }: { icon: typeof Lightbulb; children: str
 
 function ExampleView({ block }: { block: ExampleBlock }) {
   return (
-    <div className="rounded-xl border border-line bg-surface-2/70 px-5 py-4">
+    <div className="rounded-xl border border-line bg-sunken px-5 py-4">
       <Label icon={FlaskConical}>Worked example</Label>
       <h3 className="mb-2 font-sans text-base font-semibold text-ink">{block.title}</h3>
       <Markdown>{block.markdown}</Markdown>
@@ -55,8 +63,8 @@ function ExerciseView({ block }: { block: ExerciseBlock }) {
       <Label icon={PencilLine}>Try it</Label>
       <Markdown>{block.prompt}</Markdown>
       {block.hints.slice(0, hintsShown).map((hint, index) => (
-        <div key={index} className="mt-3 rounded-lg bg-surface-2 px-4 py-2.5">
-          <span className="font-sans text-xs font-semibold text-ink-3" data-anchor-ignore>
+        <div key={index} className="mt-3 rounded-lg bg-sunken px-4 py-3">
+          <span className="font-sans text-xs font-semibold text-ink-subtle" data-anchor-ignore>
             Hint {index + 1}
           </span>
           <Markdown compact>{hint}</Markdown>
@@ -74,7 +82,7 @@ function ExerciseView({ block }: { block: ExerciseBlock }) {
       </div>
       {solutionShown && (
         <div className="mt-4 border-t border-line pt-4">
-          <Label icon={Sparkles}>Solution</Label>
+          <Label icon={CircleCheck}>Solution</Label>
           <Markdown>{block.solution}</Markdown>
         </div>
       )}
@@ -82,11 +90,12 @@ function ExerciseView({ block }: { block: ExerciseBlock }) {
   );
 }
 
+// Colour only where it means something: the accent for the key idea, amber for a warning
 const CALLOUTS = {
-  key_idea: { icon: Lightbulb, label: "Key idea", tone: "border-accent bg-accent-soft/60" },
-  definition: { icon: BookOpen, label: "Definition", tone: "border-ink-3 bg-surface-2/70" },
-  tip: { icon: Sparkles, label: "Tip", tone: "border-success bg-success-soft/70" },
-  warning: { icon: TriangleAlert, label: "Watch out", tone: "border-warning bg-warning-soft/70" },
+  key_idea: { icon: KeyRound, label: "Key idea", tone: "border-brand bg-brand-soft", iconTone: "text-brand-ink" },
+  definition: { icon: BookOpen, label: "Definition", tone: "border-line-strong bg-sunken", iconTone: "text-ink-muted" },
+  tip: { icon: Lightbulb, label: "Tip", tone: "border-line-strong bg-sunken", iconTone: "text-ink-muted" },
+  warning: { icon: TriangleAlert, label: "Watch out", tone: "border-warning bg-warning-soft", iconTone: "text-warning-ink" },
 } as const;
 
 function CalloutView({ block }: { block: CalloutBlock }) {
@@ -94,8 +103,8 @@ function CalloutView({ block }: { block: CalloutBlock }) {
   const Icon = style.icon;
   return (
     <aside className={clsx("rounded-r-xl border-l-4 px-5 py-4", style.tone)}>
-      <div className="mb-1.5 flex items-center gap-2 font-sans text-sm font-semibold text-ink">
-        <Icon className="size-4 shrink-0" aria-hidden />
+      <div className="mb-2 flex items-center gap-2 font-sans text-sm font-semibold text-ink">
+        <Icon className={clsx("size-4 shrink-0", style.iconTone)} aria-hidden />
         <span>{block.title || style.label}</span>
       </div>
       <Markdown>{block.markdown}</Markdown>

@@ -1,6 +1,17 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowRight, ChevronDown, ChevronUp, Plus, Trash2, Wand2 } from "lucide-react";
-import { useEffect, useReducer, useState } from "react";
+import clsx from "clsx";
+import {
+  ArrowRight,
+  ChevronDown,
+  ChevronUp,
+  CircleAlert,
+  CircleCheck,
+  CircleDashed,
+  Plus,
+  Trash2,
+  Wand2,
+} from "lucide-react";
+import { type ReactNode, useEffect, useReducer, useState } from "react";
 import { useNavigate } from "react-router";
 import { api } from "../../api/client";
 import { queryKeys, useCourseMutation } from "../../api/hooks";
@@ -16,9 +27,13 @@ import {
   sectionCount,
   toOutlineUpdate,
 } from "../../lib/outline";
-import { AutoTextArea, Badge, Button, Card, ErrorNotice, IconButton } from "../ui";
+import { AutoTextArea, Button, Card, ErrorNotice, IconButton } from "../ui";
 
 const SAVE_DELAY_MS = 800;
+
+// Text that's edited in place: it reads as text until it's hovered or focused
+const INLINE_FIELD =
+  "block rounded-lg bg-transparent transition-colors focus:bg-surface focus-visible:outline-offset-0";
 
 export function OutlineEditor({ course }: { course: Course }) {
   const navigate = useNavigate();
@@ -79,21 +94,31 @@ export function OutlineEditor({ course }: { course: Course }) {
     <main className="mx-auto max-w-6xl px-4 pt-8 pb-36 sm:px-6 sm:pt-12">
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0">
-          <p className="text-sm font-medium text-accent">Your course outline</p>
-          <input
-            value={draft.title}
-            onChange={(e) => edit({ type: "setCourse", field: "title", value: e.target.value })}
-            aria-label="Course title"
-            className="-mx-2 mt-1 w-full rounded-lg bg-transparent px-2 py-1 font-serif text-3xl font-semibold tracking-tight text-ink hover:bg-surface-2/70 focus:bg-surface focus:outline-none sm:text-4xl"
-          />
+          <p className="text-sm font-medium text-ink-subtle">Your course outline</p>
+          {/* A wrapping field, so long titles break onto balanced lines instead of being cut off */}
+          <h1 className="mt-1">
+            <AutoTextArea
+              singleLine
+              value={draft.title}
+              onChange={(e) => edit({ type: "setCourse", field: "title", value: e.target.value })}
+              aria-label="Course title"
+              className={clsx(
+                INLINE_FIELD,
+                "-mx-2 w-[calc(100%+1rem)] px-2 py-1 font-serif text-3xl leading-tight font-semibold tracking-tighter text-balance text-ink hover:bg-surface-hover sm:text-4xl",
+              )}
+            />
+          </h1>
           <AutoTextArea
             value={draft.description}
             onChange={(e) => edit({ type: "setCourse", field: "description", value: e.target.value })}
             aria-label="Course description"
             placeholder="Describe the course (optional)"
-            className="-mx-2 mt-1 w-full rounded-lg bg-transparent px-2 py-1 text-ink-2 hover:bg-surface-2/70 focus:bg-surface focus:outline-none"
+            className={clsx(
+              INLINE_FIELD,
+              "-mx-2 mt-2 w-[calc(100%+1rem)] px-2 py-1 text-base text-pretty text-ink-muted placeholder:text-ink-subtle hover:bg-surface-hover",
+            )}
           />
-          <p className="mt-3 text-sm text-ink-3">
+          <p className="mt-3 text-sm text-pretty text-ink-subtle">
             Edit anything before you start. Nothing has been written yet: each section is written
             when you reach it.
           </p>
@@ -103,7 +128,7 @@ export function OutlineEditor({ course }: { course: Course }) {
             </div>
           )}
 
-          <ol className="mt-8 space-y-5">
+          <ol className="mt-8 space-y-4">
             {draft.modules.map((module, index) => (
               <ModuleEditor
                 key={module.key}
@@ -116,7 +141,7 @@ export function OutlineEditor({ course }: { course: Course }) {
               />
             ))}
           </ol>
-          <Button variant="secondary" className="mt-5" onClick={() => edit({ type: "addModule" })}>
+          <Button variant="secondary" className="mt-4" onClick={() => edit({ type: "addModule" })}>
             <Plus className="size-4" aria-hidden />
             Add module
           </Button>
@@ -125,16 +150,16 @@ export function OutlineEditor({ course }: { course: Course }) {
         <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
           {course.profile && <ProfileCard profile={course.profile} />}
           <Card className="p-5">
-            <p className="font-medium text-ink">Want a different shape?</p>
-            <p className="mt-1 text-sm text-ink-2">
+            <h2 className="text-base font-semibold text-ink">Want a different shape?</h2>
+            <p className="mt-1 text-sm text-ink-muted">
               Describe the changes and Marginalia will rework the outline.
             </p>
             <AutoTextArea
               value={instructions}
               onChange={(e) => setInstructions(e.target.value)}
-              placeholder="e.g. More hands-on, and skip the history"
+              placeholder="More hands-on, and skip the history…"
               aria-label="Changes to make"
-              className="mt-3 min-h-20 w-full rounded-lg border border-line-strong bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-3 focus:border-accent focus:outline-none"
+              className="mt-3 min-h-20 w-full rounded-lg border border-line-control bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-subtle"
             />
             <Button
               variant="secondary"
@@ -146,28 +171,34 @@ export function OutlineEditor({ course }: { course: Course }) {
               <Wand2 className="size-4" aria-hidden />
               Revise outline
             </Button>
-            {revise.isError && <p className="mt-2 text-sm text-danger">{revise.error.message}</p>}
+            {revise.isError && (
+              <p className="mt-2 flex gap-2 text-sm text-negative-ink">
+                <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
+                {revise.error.message}
+              </p>
+            )}
           </Card>
         </aside>
       </div>
 
-      <footer className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface/95 backdrop-blur-md">
+      <footer className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 sm:px-6">
-          <div className="min-w-0 flex-1 text-sm">
+          {/* Problems are announced as they appear; the routine save status isn't, so typing stays quiet */}
+          <div className="min-w-0 flex-1 text-sm" aria-live="polite">
             {problems.length > 0 ? (
-              <p className="truncate text-danger">{problems[0]}</p>
+              <Problem>{problems[0]}</Problem>
             ) : save.isError ? (
-              <p className="truncate text-danger">Couldn't save: {save.error.message}</p>
+              <Problem>Couldn't save: {save.error.message}</Problem>
             ) : (
-              <p className="truncate text-ink-3">
-                {save.isPending ? "Saving..." : unsaved ? "Unsaved changes" : "All changes saved"}
+              <p className="truncate text-ink-subtle" aria-live="off">
+                {save.isPending ? "Saving…" : unsaved ? "Unsaved changes" : "All changes saved"}
                 <span className="hidden sm:inline">
                   {" "}
                   · {plural(sectionCount(draft), "section")}, written just in time
                 </span>
               </p>
             )}
-            {start.isError && <p className="truncate text-danger">{start.error.message}</p>}
+            {start.isError && <Problem>{start.error.message}</Problem>}
           </div>
           <Button
             size="lg"
@@ -181,6 +212,15 @@ export function OutlineEditor({ course }: { course: Course }) {
         </div>
       </footer>
     </main>
+  );
+}
+
+function Problem({ children }: { children: ReactNode }) {
+  return (
+    <p className="flex items-center gap-2 text-negative-ink">
+      <CircleAlert className="size-4 shrink-0" aria-hidden />
+      <span className="truncate">{children}</span>
+    </p>
   );
 }
 
@@ -200,20 +240,24 @@ function ModuleEditor({
   edit: (action: OutlineAction) => void;
 }) {
   return (
-    <li className="rounded-2xl border border-line bg-surface p-4 shadow-sm sm:p-5">
-      <div className="flex items-start gap-3">
-        <span className="mt-1 flex size-7 shrink-0 items-center justify-center rounded-full bg-accent-soft text-sm font-semibold text-accent">
+    <li className="rounded-xl border border-line bg-surface p-4 shadow-(--elevation-xs) sm:p-5">
+      <div className="flex flex-wrap items-start gap-x-3 sm:flex-nowrap">
+        <span className="mt-1 flex size-7 shrink-0 items-center justify-center rounded-full bg-sunken text-sm font-semibold text-ink-muted tabular-nums">
           {index + 1}
         </span>
         <div className="min-w-0 flex-1">
-          <input
+          <AutoTextArea
+            singleLine
             value={module.title}
             onChange={(e) =>
               edit({ type: "updateModule", module: module.key, changes: { title: e.target.value } })
             }
             aria-label={`Module ${index + 1} title`}
             placeholder="Module title"
-            className="w-full rounded-md bg-transparent px-1.5 py-0.5 text-lg font-semibold text-ink hover:bg-surface-2/70 focus:bg-surface-2 focus:outline-none"
+            className={clsx(
+              INLINE_FIELD,
+              "w-full px-1.5 py-0.5 text-lg font-semibold text-balance text-ink placeholder:text-ink-subtle hover:bg-surface-hover pointer-coarse:py-2",
+            )}
           />
           <AutoTextArea
             value={module.summary}
@@ -222,10 +266,14 @@ function ModuleEditor({
             }
             aria-label={`Module ${index + 1} summary`}
             placeholder="What this module covers (optional)"
-            className="w-full rounded-md bg-transparent px-1.5 py-0.5 text-sm text-ink-2 hover:bg-surface-2/70 focus:bg-surface-2 focus:outline-none"
+            className={clsx(
+              INLINE_FIELD,
+              "mt-0.5 w-full px-1.5 py-0.5 text-sm text-pretty text-ink-muted placeholder:text-ink-subtle hover:bg-surface-hover",
+            )}
           />
         </div>
-        <div className="flex">
+        {/* Under the title on phones, so the title keeps the width; beside it on wider screens */}
+        <div className="flex w-full justify-end sm:w-auto">
           <IconButton
             label="Move module up"
             disabled={isFirst}
@@ -250,17 +298,18 @@ function ModuleEditor({
         </div>
       </div>
 
-      <ol className="mt-3 space-y-0.5 sm:pl-10">
+      <ol className="mt-3 space-y-1 sm:pl-10">
         {module.sections.map((section, sectionIndex) => (
           <li
             key={section.key}
-            className="group flex items-start gap-2 rounded-lg px-1 py-1 hover:bg-surface-2/60"
+            className="group flex flex-wrap items-start gap-x-2 rounded-lg p-1 transition-colors hover:bg-surface-hover sm:flex-nowrap"
           >
-            <span className="mt-1.5 w-8 shrink-0 text-xs font-medium text-ink-3 tabular-nums">
+            <span className="mt-1.5 w-8 shrink-0 text-xs font-medium text-ink-subtle tabular-nums">
               {index + 1}.{sectionIndex + 1}
             </span>
             <div className="min-w-0 flex-1">
-              <input
+              <AutoTextArea
+                singleLine
                 value={section.title}
                 onChange={(e) =>
                   edit({
@@ -272,7 +321,10 @@ function ModuleEditor({
                 }
                 aria-label={`Section ${index + 1}.${sectionIndex + 1} title`}
                 placeholder="Section title"
-                className="w-full rounded-md bg-transparent px-1.5 py-0.5 font-medium text-ink focus:bg-surface focus:outline-none"
+                className={clsx(
+                  INLINE_FIELD,
+                  "w-full px-1.5 py-0.5 text-base font-medium text-balance text-ink placeholder:text-ink-subtle pointer-coarse:py-2 pointer-coarse:leading-7",
+                )}
               />
               <AutoTextArea
                 value={section.summary}
@@ -286,10 +338,14 @@ function ModuleEditor({
                 }
                 aria-label={`Section ${index + 1}.${sectionIndex + 1} summary`}
                 placeholder="What it teaches (optional)"
-                className="w-full rounded-md bg-transparent px-1.5 py-0.5 text-sm text-ink-2 focus:bg-surface focus:outline-none"
+                className={clsx(
+                  INLINE_FIELD,
+                  "w-full px-1.5 py-0.5 text-sm text-pretty text-ink-muted placeholder:text-ink-subtle",
+                )}
               />
             </div>
-            <div className="flex sm:opacity-0 sm:group-focus-within:opacity-100 sm:group-hover:opacity-100">
+            {/* Revealed on hover with a mouse; always there on touch screens */}
+            <div className="flex w-full justify-end sm:w-auto pointer-fine:opacity-0 pointer-fine:group-focus-within:opacity-100 pointer-fine:group-hover:opacity-100">
               <IconButton
                 label="Move section up"
                 disabled={isFirst && sectionIndex === 0}
@@ -320,17 +376,21 @@ function ModuleEditor({
           </li>
         ))}
         {module.sections.length === 0 && (
-          <li className="px-2 py-1 text-sm text-danger">Add at least one section.</li>
+          <li className="flex items-center gap-2 px-2 py-1 text-sm text-negative-ink">
+            <CircleAlert className="size-4 shrink-0" aria-hidden />
+            Add at least one section.
+          </li>
         )}
       </ol>
-      <button
-        type="button"
+      <Button
+        variant="ghost"
+        size="sm"
+        className="mt-2 -ml-1 sm:ml-9"
         onClick={() => edit({ type: "addSection", module: module.key })}
-        className="mt-2 inline-flex items-center gap-1 rounded-md px-2 py-1 text-sm font-medium text-accent hover:bg-accent-soft sm:ml-10"
       >
         <Plus className="size-4" aria-hidden />
         Add section
-      </button>
+      </Button>
     </li>
   );
 }
@@ -338,27 +398,39 @@ function ModuleEditor({
 function ProfileCard({ profile }: { profile: LearnerProfile }) {
   return (
     <Card className="p-5">
-      <p className="text-xs font-semibold tracking-wide text-ink-3 uppercase">Where you're starting</p>
-      <p className="mt-2 font-medium text-ink capitalize">{profile.level}</p>
-      <p className="mt-1 text-sm text-ink-2">{profile.summary}</p>
-      {profile.strengths.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {profile.strengths.map((item) => (
-            <Badge key={item} tone="success">
-              {item}
-            </Badge>
-          ))}
-        </div>
-      )}
-      {profile.gaps.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          {profile.gaps.map((item) => (
-            <Badge key={item} tone="warning">
-              {item}
-            </Badge>
-          ))}
-        </div>
-      )}
+      <h2 className="text-sm font-medium text-ink-subtle">Where you're starting</h2>
+      <p className="mt-1 text-lg font-semibold text-ink capitalize">{profile.level}</p>
+      <p className="mt-2 text-sm text-pretty text-ink-muted">{profile.summary}</p>
+      <ProfileList title="You already know" items={profile.strengths} icon={CircleCheck} tone="text-positive" />
+      <ProfileList title="Still to learn" items={profile.gaps} icon={CircleDashed} tone="text-ink-subtle" />
     </Card>
+  );
+}
+
+// Strengths and gaps are phrases, often long ones, so they're a wrapping list rather than pills
+function ProfileList({
+  title,
+  items,
+  icon: Icon,
+  tone,
+}: {
+  title: string;
+  items: string[];
+  icon: typeof CircleCheck;
+  tone: string;
+}) {
+  if (items.length === 0) return null;
+  return (
+    <div className="mt-4 border-t border-line pt-4">
+      <h3 className="text-sm font-semibold text-ink">{title}</h3>
+      <ul className="mt-2 space-y-2">
+        {items.map((item) => (
+          <li key={item} className="flex gap-2 text-sm text-ink-muted">
+            <Icon className={clsx("mt-0.5 size-4 shrink-0", tone)} aria-hidden />
+            <span className="min-w-0">{item}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

@@ -1,29 +1,45 @@
 import clsx from "clsx";
-import { AlertTriangle } from "lucide-react";
+import { CircleAlert } from "lucide-react";
 import {
   type ButtonHTMLAttributes,
   forwardRef,
   type ReactNode,
   type TextareaHTMLAttributes,
+  useCallback,
+  useEffect,
   useLayoutEffect,
   useRef,
 } from "react";
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
-type ButtonSize = "sm" | "md" | "lg";
+type ButtonSize = "sm" | "md" | "lg" | "xl";
 
+// One primary per view; secondary and ghost for everything else
 const VARIANTS: Record<ButtonVariant, string> = {
-  primary: "bg-accent text-accent-ink hover:bg-accent-hover shadow-sm",
-  secondary: "bg-surface text-ink border border-line-strong hover:bg-surface-2",
-  ghost: "text-ink-2 hover:bg-surface-2 hover:text-ink",
-  danger: "text-danger hover:bg-danger-soft",
+  primary: "bg-brand text-on-brand hover:bg-brand-hover active:bg-brand-hover",
+  secondary:
+    "border border-line-strong bg-surface text-ink hover:border-line-control hover:bg-surface-hover active:bg-sunken",
+  ghost: "text-ink-muted hover:bg-surface-hover hover:text-ink active:bg-sunken",
+  danger: "text-negative-ink hover:bg-negative-soft active:bg-negative-soft",
 };
 
+// 32, 36 and 40px tall (48px beside a large input); at least 44px on touch screens
 const SIZES: Record<ButtonSize, string> = {
-  sm: "h-8 px-3 text-sm gap-1.5",
-  md: "h-10 px-4 text-sm gap-2",
-  lg: "h-12 px-6 text-base gap-2",
+  sm: "h-8 gap-1.5 px-3 text-sm",
+  md: "h-9 gap-2 px-4 text-sm",
+  lg: "h-10 gap-2 px-5 text-base",
+  xl: "h-12 gap-2 px-6 text-base",
 };
+
+/** Button styles, also for links that look like buttons. */
+export function buttonClasses(variant: ButtonVariant = "primary", size: ButtonSize = "md") {
+  return clsx(
+    "inline-flex shrink-0 items-center justify-center rounded-lg font-medium transition-colors",
+    "pointer-coarse:min-h-11 disabled:cursor-not-allowed disabled:opacity-50",
+    VARIANTS[variant],
+    SIZES[size],
+  );
+}
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -38,13 +54,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   return (
     <button
       ref={ref}
-      className={clsx(
-        "inline-flex shrink-0 items-center justify-center rounded-lg font-medium transition-colors",
-        "disabled:cursor-not-allowed disabled:opacity-50",
-        VARIANTS[variant],
-        SIZES[size],
-        className,
-      )}
+      className={clsx(buttonClasses(variant, size), className)}
       disabled={disabled || loading}
       {...props}
     >
@@ -66,8 +76,8 @@ export function IconButton({
       aria-label={label}
       title={label}
       className={clsx(
-        "inline-flex size-8 shrink-0 items-center justify-center rounded-md text-ink-3 transition-colors",
-        "hover:bg-surface-2 hover:text-ink disabled:opacity-40",
+        "inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-ink-subtle transition-colors pointer-coarse:min-h-11 pointer-coarse:min-w-11",
+        "hover:bg-surface-hover hover:text-ink active:bg-sunken disabled:pointer-events-none disabled:text-ink-faint",
         className,
       )}
       {...props}
@@ -88,7 +98,7 @@ export function Spinner({ className }: { className?: string }) {
 
 export function Card({ className, children }: { className?: string; children: ReactNode }) {
   return (
-    <div className={clsx("rounded-2xl border border-line bg-surface shadow-sm", className)}>
+    <div className={clsx("rounded-xl border border-line bg-surface shadow-(--elevation-xs)", className)}>
       {children}
     </div>
   );
@@ -98,20 +108,20 @@ export function Badge({
   tone = "neutral",
   children,
 }: {
-  tone?: "neutral" | "accent" | "success" | "warning" | "danger";
+  tone?: "neutral" | "brand" | "positive" | "warning" | "negative";
   children: ReactNode;
 }) {
   const tones = {
-    neutral: "bg-surface-2 text-ink-2",
-    accent: "bg-accent-soft text-accent",
-    success: "bg-success-soft text-success",
-    warning: "bg-warning-soft text-warning",
-    danger: "bg-danger-soft text-danger",
+    neutral: "bg-sunken text-ink-muted",
+    brand: "bg-brand-soft text-brand-ink",
+    positive: "bg-positive-soft text-positive-ink",
+    warning: "bg-warning-soft text-warning-ink",
+    negative: "bg-negative-soft text-negative-ink",
   };
   return (
     <span
       className={clsx(
-        "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap",
+        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap",
         tones[tone],
       )}
     >
@@ -120,6 +130,7 @@ export function Badge({
   );
 }
 
+/** What went wrong and what to do about it, with an optional action such as Try again. */
 export function ErrorNotice({
   title = "Something went wrong",
   message,
@@ -132,39 +143,118 @@ export function ErrorNotice({
   return (
     <div
       role="alert"
-      className="flex flex-col gap-3 rounded-xl border border-danger/30 bg-danger-soft p-4 sm:flex-row sm:items-center"
+      className="flex flex-col gap-3 rounded-xl border border-negative/25 bg-negative-soft p-4 sm:flex-row sm:items-center"
     >
-      <AlertTriangle className="size-5 shrink-0 text-danger" aria-hidden />
+      <CircleAlert className="size-5 shrink-0 text-negative" aria-hidden />
       <div className="min-w-0 flex-1 text-sm">
-        <p className="font-medium text-ink">{title}</p>
-        <p className="mt-0.5 text-ink-2">{message}</p>
+        <p className="font-semibold text-ink">{title}</p>
+        <p className="mt-1 text-ink-muted">{message}</p>
       </div>
-      {action}
+      {action && <div className="flex shrink-0 flex-wrap gap-2">{action}</div>}
     </div>
   );
 }
 
-/** A textarea that grows with its content. */
+export function Skeleton({ className }: { className?: string }) {
+  return <div className={clsx("rounded-md bg-line motion-safe:animate-pulse", className)} />;
+}
+
+/** A placeholder shaped like a page: a title, a few lines of text and a block. */
+export function PageSkeleton({ className }: { className?: string }) {
+  return (
+    <div
+      role="status"
+      aria-label="Loading"
+      className={clsx("appear-delayed mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14", className)}
+    >
+      <Skeleton className="h-4 w-40" />
+      <Skeleton className="mt-4 h-9 w-4/5" />
+      <Skeleton className="mt-3 h-9 w-3/5" />
+      <div className="mt-6 space-y-3">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-11/12" />
+        <Skeleton className="h-4 w-2/3" />
+      </div>
+      <Skeleton className="mt-10 h-40 w-full rounded-xl" />
+    </div>
+  );
+}
+
+/**
+ * A textarea that grows with its content. With `singleLine` the value stays on one line (Enter
+ * does nothing and pasted line breaks become spaces), but long text still wraps on screen.
+ */
 export function AutoTextArea({
   className,
   value,
+  singleLine = false,
+  onChange,
+  onKeyDown,
   ...props
-}: TextareaHTMLAttributes<HTMLTextAreaElement> & { value: string }) {
+}: TextareaHTMLAttributes<HTMLTextAreaElement> & { value: string; singleLine?: boolean }) {
   const ref = useRef<HTMLTextAreaElement>(null);
-  useLayoutEffect(() => {
+
+  const fit = useCallback(() => {
     const element = ref.current;
     if (!element) return;
     element.style.height = "auto";
     element.style.height = `${element.scrollHeight}px`;
-  }, [value]);
+  }, []);
+
+  useLayoutEffect(fit, [value, fit]);
+
+  // Wrapping changes with the width and once web fonts have loaded, so measure again then
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+    let width = element.clientWidth;
+    const observer =
+      typeof ResizeObserver === "undefined"
+        ? null
+        : new ResizeObserver(() => {
+            if (element.clientWidth === width) return;
+            width = element.clientWidth;
+            fit();
+          });
+    observer?.observe(element);
+    document.fonts?.addEventListener("loadingdone", fit);
+    return () => {
+      observer?.disconnect();
+      document.fonts?.removeEventListener("loadingdone", fit);
+    };
+  }, [fit]);
+
   return (
-    <textarea ref={ref} value={value} rows={1} className={clsx("resize-none", className)} {...props} />
+    <textarea
+      ref={ref}
+      value={value}
+      rows={1}
+      className={clsx("resize-none", singleLine && "overflow-hidden", className)}
+      onChange={(event) => {
+        const element = event.target;
+        if (singleLine && /[\r\n]/.test(element.value)) {
+          // Replace line breaks with spaces, keeping the caret where it was in the text
+          const oneLine = (text: string) => text.replace(/\s*[\r\n]+\s*/g, " ");
+          const caret = oneLine(element.value.slice(0, element.selectionStart)).length;
+          element.value = oneLine(element.value);
+          element.setSelectionRange(caret, caret);
+        }
+        onChange?.(event);
+      }}
+      onKeyDown={(event) => {
+        if (singleLine && event.key === "Enter" && !event.nativeEvent.isComposing) {
+          event.preventDefault();
+        }
+        onKeyDown?.(event);
+      }}
+      {...props}
+    />
   );
 }
 
 export function TypingDots({ label = "Thinking" }: { label?: string }) {
   return (
-    <span className="inline-flex items-center gap-1 text-ink-3" role="status" aria-label={label}>
+    <span className="inline-flex items-center gap-1 text-ink-subtle" role="status" aria-label={label}>
       <span className="typing-dot size-1.5 rounded-full bg-current" />
       <span className="typing-dot size-1.5 rounded-full bg-current" />
       <span className="typing-dot size-1.5 rounded-full bg-current" />

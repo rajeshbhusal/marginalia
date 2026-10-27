@@ -1,0 +1,169 @@
+/*
+Theme: Marginalia (roles follow the clean-ui design system)
+- Accent: #2F5BEA, the Marginalia blue from the logo (oklch(0.53 0.22 266); #7E9DFF in dark mode).
+  For the primary action, links, the current item, progress and focus rings. Never decorative.
+- Neutrals: hue 265, chroma <= 0.01 (cool, leaning towards the brand blue). Canvas #F6F7F9 with
+  white cards in light mode.
+- Text: ink for content and controls, ink-muted for supporting text, ink-subtle for metadata
+  (all >= 4.5:1 on canvas, cards and trays). ink-faint is for disabled and decorative use only.
+- Primary button: accent fill, one per view. Everything else is secondary (bordered) or ghost.
+- Status: positive, warning and negative, as soft tints with their -ink colour for text, and
+  always with a word or an icon. The yellow mark colours are only for highlighted passages.
+- Radius: 12px cards (rounded-xl), 8px controls (rounded-lg), 6px chips (rounded-md), 16px
+  sheets (rounded-2xl), full for pills and avatars.
+- Density: comfortable. 14px supporting text, 16px primary lines and inputs, 18px lesson text.
+  Controls are 32-40px tall, 44px on touch screens (pointer-coarse).
+- Type: Inter for the interface. Source Serif 4 for the wordmark, page and course titles and the
+  lesson text. JetBrains Mono for code. Weights 400, 500 and 600 only.
+- Signature: the serif wordmark beside the margin-note logo, and the yellow highlight that ties
+  a passage to its thread in the margin.
+*/
+
+:root {
+  /* Surfaces */
+  --canvas: #f6f7f9; /* page */
+  --surface: #ffffff; /* cards, inputs */
+  --sunken: #f0f2f5; /* trays, tracks, skeletons */
+  --surface-hover: oklch(0.21 0.01 266 / 0.05); /* hover fill on any surface */
+  --line: #e2e5ea; /* borders, dividers */
+  --line-strong: #ced2d8; /* secondary buttons, hover borders */
+  --line-control: #898c92; /* input borders, 3:1 on canvas and cards */
+
+  /* Text: 16.7 / 7.9 / 5.1 : 1 on canvas */
+  --ink: #15171c;
+  --ink-muted: #4a4d53;
+  --ink-subtle: #676a70;
+  --ink-faint: #a2a5aa;
+
+  /* Accent */
+  --brand: #2f5bea;
+  --brand-hover: #2349c8;
+  --brand-soft: #eaf0ff;
+  --brand-ink: #2c54da; /* accent text */
+  --on-brand: #ffffff; /* text on a brand fill, 5.5:1 */
+
+  /* Status: solid (icons) · soft (backgrounds) · ink (text on soft, >= 4.5:1) */
+  --positive: #12805c;
+  --positive-soft: #e3f6ee;
+  --positive-ink: #007654;
+  --warning: #a35f00;
+  --warning-soft: #fff4dd;
+  --warning-ink: #985700;
+  --negative: #c7362c;
+  --negative-soft: #fdecea;
+  --negative-ink: #ba2c25;
+
+  /* Highlighted passages */
+  --mark: rgb(255 196 0 / 0.3);
+  --mark-strong: rgb(255 170 0 / 0.55);
+  --mark-solid: #f5b400;
+
+  /* Code */
+  --code-bg: #f4f5f8;
+  --code-keyword: #8b2fc9;
+  --code-string: #127a4c;
+  --code-number: #b4530a;
+  --code-comment: #676a70;
+  --code-title: #1f5bd8;
+  --code-attr: #9a4b00;
+
+  /* Elevation: two layers, tinted to the neutrals. Only menus, sheets and drawers use lg. */
+  --elevation-xs: 0 1px 2px oklch(0.2 0.01 265 / 0.05);
+  --elevation-sm: 0 1px 2px oklch(0.2 0.01 265 / 0.04), 0 2px 6px -1px oklch(0.2 0.01 265 / 0.06);
+  --elevation-md: 0 2px 4px -1px oklch(0.2 0.01 265 / 0.06), 0 8px 20px -4px oklch(0.2 0.01 265 / 0.1);
+  --elevation-lg: 0 4px 8px -2px oklch(0.2 0.01 265 / 0.08), 0 20px 48px -12px oklch(0.2 0.01 265 / 0.18);
+
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --canvas: #0e1014;
+  --surface: #17191e;
+  --sunken: #1e2025;
+  --surface-hover: oklch(1 0 0 / 0.06);
+  --line: #292b30;
+  --line-strong: #37393f;
+  --line-control: #696c72;
+
+  /* 16 / 10 / 6 : 1 on canvas */
+  --ink: #e9ebf0;
+  --ink-muted: #b8bcc2;
+  --ink-subtle: #8d9197;
+  --ink-faint: #5b5e62;
+
+  --brand: #7e9dff;
+  --brand-hover: #9cb3ff;
+  --brand-soft: #1b2442;
+  --brand-ink: #9cb3ff;
+  --on-brand: #0b1330;
+
+  --positive: #43c493;
+  --positive-soft: #11291f;
+  --positive-ink: #43c493;
+  --warning: #f0b45a;
+  --warning-soft: #2c2210;
+  --warning-ink: #f0b45a;
+  --negative: #ff7b6e;
+  --negative-soft: #331715;
+  --negative-ink: #ff7b6e;
+
+  --mark: rgb(255 196 0 / 0.22);
+  --mark-strong: rgb(255 180 0 / 0.45);
+  --mark-solid: #e0a400;
+
+  --code-bg: #12141a;
+  --code-keyword: #d19bff;
+  --code-string: #7fd8a6;
+  --code-number: #ffb27a;
+  --code-comment: #8d9197;
+  --code-title: #8fb0ff;
+  --code-attr: #ffc27a;
+
+  --elevation-xs: 0 1px 2px oklch(0 0 0 / 0.3);
+  --elevation-sm: 0 1px 2px oklch(0 0 0 / 0.3), 0 2px 6px -1px oklch(0 0 0 / 0.35);
+  --elevation-md: 0 2px 4px -1px oklch(0 0 0 / 0.35), 0 8px 20px -4px oklch(0 0 0 / 0.45);
+  --elevation-lg: 0 4px 8px -2px oklch(0 0 0 / 0.4), 0 20px 48px -12px oklch(0 0 0 / 0.6);
+
+  color-scheme: dark;
+}
+
+/* Tailwind utilities for the roles: bg-canvas, text-ink-muted, border-line-control, bg-brand... */
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-sunken: var(--sunken);
+  --color-surface-hover: var(--surface-hover);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-line-control: var(--line-control);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-subtle: var(--ink-subtle);
+  --color-ink-faint: var(--ink-faint);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-ink: var(--brand-ink);
+  --color-on-brand: var(--on-brand);
+  --color-positive: var(--positive);
+  --color-positive-soft: var(--positive-soft);
+  --color-positive-ink: var(--positive-ink);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-ink: var(--warning-ink);
+  --color-negative: var(--negative);
+  --color-negative-soft: var(--negative-soft);
+  --color-negative-ink: var(--negative-ink);
+  --color-mark: var(--mark);
+  --color-mark-solid: var(--mark-solid);
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Source Serif 4 Variable", ui-serif, Georgia, serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Tracking tightens as type grows: tight at 20-24px, tighter at 30-36px, display at 48px+ */
+@theme {
+  --tracking-tight: -0.01em;
+  --tracking-tighter: -0.02em;
+  --tracking-display: -0.03em;
+}
