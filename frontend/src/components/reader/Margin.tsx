@@ -127,10 +127,10 @@ export function MarginSheet({
   return (
     <div className="fixed inset-0 z-40" role="dialog" aria-modal="true" aria-label="Margin notes">
       <div className="absolute inset-0 bg-black/30" onClick={onClose} />
-      <div className="absolute inset-x-0 bottom-0 max-h-[78dvh] overflow-y-auto rounded-t-2xl border-t border-line bg-bg px-4 pt-3 pb-8 shadow-2xl">
+      <div className="absolute inset-x-0 bottom-0 max-h-[78dvh] overflow-y-auto rounded-t-2xl border-t border-line bg-canvas px-4 pt-3 pb-8 shadow-(--elevation-lg)">
         <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-line-strong" />
         <div className="mb-3 flex items-center justify-between">
-          <p className="font-medium text-ink">Margin notes</p>
+          <p className="text-base font-semibold text-ink">Margin notes</p>
           <IconButton label="Close" onClick={onClose}>
             <X className="size-4" />
           </IconButton>
@@ -156,7 +156,7 @@ export function AskButton({
   if (docked) {
     return (
       <div className="fixed inset-x-0 bottom-5 z-40 flex justify-center px-4">
-        <Button size="lg" className="shadow-lg" onMouseDown={keepSelection} onClick={onAsk}>
+        <Button size="lg" className="shadow-(--elevation-lg)" onMouseDown={keepSelection} onClick={onAsk}>
           <MessageSquarePlus className="size-4" aria-hidden />
           Ask about this passage
         </Button>
@@ -167,7 +167,7 @@ export function AskButton({
   const left = Math.min(Math.max(anchor.rect.left + anchor.rect.width / 2, 70), window.innerWidth - 70);
   return (
     <div className="fixed z-40 -translate-x-1/2" style={{ top, left }}>
-      <Button size="sm" className="shadow-lg" onMouseDown={keepSelection} onClick={onAsk}>
+      <Button size="sm" className="shadow-(--elevation-lg)" onMouseDown={keepSelection} onClick={onAsk}>
         <MessageSquarePlus className="size-4" aria-hidden />
         Ask
       </Button>
