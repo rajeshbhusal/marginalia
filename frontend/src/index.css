@@ -1,0 +1,339 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* Design tokens. Components use the semantic names (bg-surface, text-ink-2, ...). */
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #f0f2f5;
+  --ink: #15171c;
+  --ink-2: #474d5a;
+  --ink-3: #7a808e;
+  --line: #e2e5ea;
+  --line-strong: #cdd2da;
+  --accent: #2f5bea;
+  --accent-hover: #2349c8;
+  --accent-ink: #ffffff;
+  --accent-soft: #eaf0ff;
+  --mark: rgb(255 196 0 / 0.3);
+  --mark-strong: rgb(255 170 0 / 0.55);
+  --mark-solid: #f5b400;
+  --success: #12805c;
+  --success-soft: #e3f6ee;
+  --warning: #a35f00;
+  --warning-soft: #fff4dd;
+  --danger: #c7362c;
+  --danger-soft: #fdecea;
+  --code-bg: #f4f5f8;
+  --code-keyword: #8b2fc9;
+  --code-string: #127a4c;
+  --code-number: #b4530a;
+  --code-comment: #7b8190;
+  --code-title: #1f5bd8;
+  --code-attr: #9a4b00;
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --bg: #0e1014;
+  --surface: #161920;
+  --surface-2: #1d2029;
+  --ink: #e9ebf0;
+  --ink-2: #b6bcc8;
+  --ink-3: #868d9b;
+  --line: #272b36;
+  --line-strong: #363b48;
+  --accent: #7e9dff;
+  --accent-hover: #9cb3ff;
+  --accent-ink: #0b1330;
+  --accent-soft: #1b2442;
+  --mark: rgb(255 196 0 / 0.22);
+  --mark-strong: rgb(255 180 0 / 0.45);
+  --mark-solid: #e0a400;
+  --success: #43c493;
+  --success-soft: #11291f;
+  --warning: #f0b45a;
+  --warning-soft: #2c2210;
+  --danger: #ff7b6e;
+  --danger-soft: #331715;
+  --code-bg: #12141a;
+  --code-keyword: #d19bff;
+  --code-string: #7fd8a6;
+  --code-number: #ffb27a;
+  --code-comment: #7f8796;
+  --code-title: #8fb0ff;
+  --code-attr: #ffc27a;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-mark: var(--mark);
+  --color-mark-solid: var(--mark-solid);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Source Serif 4 Variable", ui-serif, Georgia, serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  ::selection {
+    background: color-mix(in srgb, var(--accent) 28%, transparent);
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+/* Highlighted passages that have margin threads (CSS Custom Highlight API) */
+::highlight(marginalia) {
+  background-color: var(--mark);
+}
+::highlight(marginalia-active) {
+  background-color: var(--mark-strong);
+}
+
+/* Lesson typography */
+.prose-lesson {
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
+  line-height: 1.75;
+  color: var(--ink);
+  overflow-wrap: break-word;
+}
+.prose-lesson > * + * {
+  margin-top: 1em;
+}
+.prose-lesson h1,
+.prose-lesson h2,
+.prose-lesson h3,
+.prose-lesson h4 {
+  font-family: var(--font-sans);
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  margin-top: 1.6em;
+}
+.prose-lesson h1,
+.prose-lesson h2 {
+  font-size: 1.3em;
+}
+.prose-lesson h3 {
+  font-size: 1.12em;
+}
+.prose-lesson h4 {
+  font-size: 1em;
+}
+.prose-lesson a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+.prose-lesson strong {
+  font-weight: 650;
+}
+.prose-lesson ul,
+.prose-lesson ol {
+  padding-left: 1.4em;
+}
+.prose-lesson ul {
+  list-style: disc;
+}
+.prose-lesson ol {
+  list-style: decimal;
+}
+.prose-lesson li + li {
+  margin-top: 0.35em;
+}
+.prose-lesson li::marker {
+  color: var(--ink-3);
+}
+.prose-lesson blockquote {
+  border-left: 3px solid var(--line-strong);
+  padding-left: 1em;
+  color: var(--ink-2);
+}
+.prose-lesson code:not(pre code) {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.1em 0.35em;
+}
+.prose-lesson hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+.prose-lesson table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-family: var(--font-sans);
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+.prose-lesson th,
+.prose-lesson td {
+  border: 1px solid var(--line);
+  padding: 0.45em 0.75em;
+  text-align: left;
+  vertical-align: top;
+}
+.prose-lesson th {
+  background: var(--surface-2);
+  font-weight: 600;
+}
+.prose-lesson .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.25em 0;
+}
+.prose-lesson .katex {
+  font-size: 1.05em;
+}
+
+/* Tutor replies and other compact markdown */
+.prose-compact {
+  font-size: 0.925rem;
+  line-height: 1.6;
+}
+.prose-compact > * + * {
+  margin-top: 0.7em;
+}
+.prose-compact ul,
+.prose-compact ol {
+  padding-left: 1.2em;
+}
+.prose-compact ul {
+  list-style: disc;
+}
+.prose-compact ol {
+  list-style: decimal;
+}
+.prose-compact a {
+  color: var(--accent);
+  text-decoration: underline;
+}
+.prose-compact strong {
+  font-weight: 600;
+}
+.prose-compact code:not(pre code) {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: var(--surface-2);
+  border-radius: 4px;
+  padding: 0.05em 0.3em;
+}
+.prose-compact table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+.prose-compact th,
+.prose-compact td {
+  border: 1px solid var(--line);
+  padding: 0.3em 0.55em;
+  text-align: left;
+}
+.prose-compact blockquote {
+  border-left: 3px solid var(--line-strong);
+  padding-left: 0.75em;
+  color: var(--ink-2);
+}
+.prose-compact .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* Syntax highlighting (highlight.js classes) in both themes */
+.hljs-keyword,
+.hljs-built_in,
+.hljs-type,
+.hljs-selector-tag,
+.hljs-literal {
+  color: var(--code-keyword);
+}
+.hljs-string,
+.hljs-regexp,
+.hljs-symbol,
+.hljs-template-variable {
+  color: var(--code-string);
+}
+.hljs-number,
+.hljs-meta {
+  color: var(--code-number);
+}
+.hljs-comment,
+.hljs-quote {
+  color: var(--code-comment);
+  font-style: italic;
+}
+.hljs-title,
+.hljs-function .hljs-title,
+.hljs-title.function_,
+.hljs-section {
+  color: var(--code-title);
+}
+.hljs-attr,
+.hljs-attribute,
+.hljs-variable,
+.hljs-params,
+.hljs-property {
+  color: var(--code-attr);
+}
+
+/* Mermaid output should scale down on narrow screens */
+.mermaid-diagram svg {
+  max-width: 100%;
+  height: auto;
+}
+
+@keyframes marginalia-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.typing-dot {
+  animation: marginalia-pulse 1.2s ease-in-out infinite;
+}
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}

@@ -1,0 +1,38 @@
+# One command to run Marginalia locally: `docker compose up --build`, then open
+# http://localhost:8000. Put your model key in .env first (see .env.example).
+name: marginalia
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: marginalia
+      POSTGRES_PASSWORD: marginalia
+      POSTGRES_DB: marginalia
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      # Published on localhost so you can also run the API outside Docker (make dev)
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U marginalia -d marginalia"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  app:
+    build: .
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: postgresql://marginalia:marginalia@db:5432/marginalia
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  db-data:

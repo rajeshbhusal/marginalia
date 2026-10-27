@@ -1,50 +1,62 @@
-[tool.poetry]
-name = "textbook_quality"
+[project]
+name = "marginalia"
 version = "0.1.0"
-description = ""
-authors = ["Vik Paruchuri <vik.paruchuri@gmail.com>"]
+description = "Personalised, just-in-time courses on anything, with an AI tutor in the margins."
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE", "NOTICE"]
+requires-python = ">=3.12"
+# Marginalia is derived from textbook_quality by Vik Paruchuri (MIT licence).
+# See NOTICE for attribution.
+authors = [{ name = "Rajesh Bhusal" }]
+dependencies = [
+    "alembic>=1.20",
+    "anthropic>=2.1,<3",
+    "asyncpg>=0.32",
+    "fastapi>=0.161",
+    "jinja2>=3.1.6",
+    "openai>=3.37,<4",
+    "pydantic>=2.14",
+    "pydantic-settings>=2.16",
+    "sqlalchemy[asyncio]>=2.1",
+    "sqlmodel>=0.0.48",
+    "uvicorn[standard]>=0.54",
+]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-sqlmodel = "^0.0.8"
-alembic = "^1.12.0"
-Jinja2 = "^3.1.2"
-psycopg2 = "^2.9.7"
-openai = "^0.28.0"
-python-dotenv = "^1.0.0"
-PyMuPDF = "^1.23.3"
-tiktoken = "^0.5.1"
-asyncpg = "^0.28.0"
-greenlet = "^2.0.2"
-markdown = "^3.4.4"
-stopit = "^1.1.2"
-pymdown-extensions = "^10.3"
-sentence-transformers = "^2.2.2"
-datasets = "^2.14.5"
-pyyaml = "^6.0.1"
-ftfy = "^6.1.1"
-tenacity = "^8.2.3"
-invoke = "^2.2.0"
-ray = "^2.7.0"
-grpcio = "^1.59.0"
-regex = "^2023.10.3"
+[project.scripts]
+marginalia = "app.cli:main"
 
-[tool.poetry.group.dev.dependencies]
-invoke = "^2.2.0"
-jupyterlab = "^4.0.6"
-black = "^23.9.1"
-pylint = "^2.17.5"
-jupyter = "^1.0.0"
-pyperclip = "^1.8.2"
-autoflake = "^2.2.1"
-
-
-[[tool.poetry.source]]
-name = "pytorch"
-url = "https://download.pytorch.org/whl/cpu"
-priority = "explicit"
+[dependency-groups]
+dev = [
+    "aiosqlite>=0.22",
+    "httpx>=0.28",
+    "pytest>=9.1",
+    "pytest-asyncio>=1.4",
+    "ruff>=0.17",
+]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["frontend"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "ASYNC", "SIM"]
+
+[tool.ruff.lint.isort]
+# The local alembic/ directory would otherwise make ruff treat the package as first-party
+known-third-party = ["alembic"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+filterwarnings = ["error::pytest.PytestUnraisableExceptionWarning"]

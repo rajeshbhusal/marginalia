@@ -1,52 +1,53 @@
-import json
-from typing import List
+import uuid
+from datetime import datetime
 
-from pydantic import validator
-from sqlalchemy import UniqueConstraint
-from sqlmodel import JSON, Column, Field, select
+from sqlalchemy import JSON, Text
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlmodel import Field
 
-from app.components.schemas import AllLessonComponentData
-from app.db.base_model import BaseDBModel
-from app.db.session import get_session
-from app.course.schemas import ResearchNote
+from app.course.schemas import CourseStatus, SectionStatus
+from app.db.base_model import TZDateTime, UUIDModel
 
-
-class Course(BaseDBModel, table=True):
-    __table_args__ = (UniqueConstraint("topic", "model", "version", name="unique_topic_model_version"),)
-
-    model: str
-    topic: str
-    outline: List[str] = Field(sa_column=Column(JSON), default=list())
-    concepts: List[str] = Field(sa_column=Column(JSON), default=list())
-    potential_outline_items: List[str] = Field(sa_column=Column(JSON), default=list())
-    markdown: str = Field(sa_column=Column(JSON), default=list())
-    components: List[AllLessonComponentData] = Field(
-        sa_column=Column(JSON), default=list()
-    )
-    queries: List[str] = Field(sa_column=Column(JSON), default=list())
-    context: List[ResearchNote] = Field(sa_column=Column(JSON), default=list())
-    version: int = Field(default=1, )
-
-    @validator("context")
-    def context_to_dict(cls, val: List[ResearchNote]):
-        return [v.json() for v in val]
-
-    @validator("components")
-    def components_to_dict(cls, val: List[AllLessonComponentData]):
-        return [v.json() for v in val]
+# JSONB on Postgres (Supabase included), plain JSON elsewhere (SQLite in tests)
+JSONType = JSON().with_variant(JSONB(), "postgresql")
 
 
-async def load_cached_course(model: str, topic: str, revision: int):
-    async with get_session() as db:
-        query = await db.exec(
-            select(Course).where(Course.topic == topic, Course.model == model, Course.version == revision)
-        )
-        course = query.all()
-    if len(course) == 0:
-        return None
-    course = course[0]
+class Course(UUIDModel, table=True):
+    __tablename__ = "course"
 
-    if course.context is not None:
-        course.context = [ResearchNote(**json.loads(v)) for v in course.context]
+    title: str
+    description: str = Field(default="", sa_type=Text)
+    goal: str = Field(sa_type=Text)
+    depth: str
+    learning_style: str
+    background: str = Field(default="", sa_type=Text)
+    status: str = CourseStatus.diagnostic
+    error: str | None = Field(default=None, sa_type=Text)
+    # JSON documents; see DiagnosticQuestion, DiagnosticAnswer, LearnerProfile and OutlineModule
+    diagnostics: list[dict] = Field(default_factory=list, sa_type=JSONType)
+    answers: list[dict] = Field(default_factory=list, sa_type=JSONType)
+    profile: dict | None = Field(default=None, sa_type=JSONType)
+    outline: list[dict] = Field(default_factory=list, sa_type=JSONType)
+    model: str  # The model that planned the course
+    current_section_id: uuid.UUID | None = None
 
-    return course
+
+class Section(UUIDModel, table=True):
+    __tablename__ = "section"
+
+    course_id: uuid.UUID = Field(foreign_key="course.id", index=True, ondelete="CASCADE")
+    position: int  # Order within the whole course
+    module_index: int
+    module_title: str
+    title: str
+    summary: str = Field(default="", sa_type=Text)
+    status: str = SectionStatus.pending
+    stage: str | None = None  # Progress while generating: queued, researching or writing
+    blocks: list[dict] = Field(default_factory=list, sa_type=JSONType)  # See app.course.blocks
+    recap: str = Field(default="", sa_type=Text)
+    research: dict | None = Field(default=None, sa_type=JSONType)  # See ResearchNotes
+    error: str | None = Field(default=None, sa_type=Text)
+    model: str | None = None
+    generation_started_at: datetime | None = Field(default=None, sa_type=TZDateTime)
+    generated_at: datetime | None = Field(default=None, sa_type=TZDateTime)
+    completed_at: datetime | None = Field(default=None, sa_type=TZDateTime)

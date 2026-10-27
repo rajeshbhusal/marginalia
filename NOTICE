@@ -1,0 +1,44 @@
+Marginalia
+Copyright (c) 2026 Rajesh Bhusal
+
+Marginalia is an independent, open-source project released under the MIT
+License (see LICENSE).
+
+
+ATTRIBUTION
+-----------
+
+Marginalia began as an import of "textbook_quality" by Vik Paruchuri:
+
+    https://github.com/VikParuchuri/textbook_quality
+    Copyright (c) 2023 Vikas Paruchuri
+    Licensed under the MIT License
+
+As the MIT License requires, the original copyright notice and permission
+notice are kept, unchanged, in the LICENSE file alongside our own.
+
+Parts of Marginalia are derived from textbook_quality, including:
+
+  - the design of the course-generation pipeline (topic -> outline ->
+    research notes -> section-by-section writing) and the idea of
+    grounding generated lessons in retrieved research notes;
+  - the model of a lesson as a sequence of typed content blocks
+    (text, example, exercise, ...), and parts of the prompt wording used to
+    write them;
+  - the database layer: the SQLModel base model with timezone-aware
+    timestamps, the async Postgres session setup, the Alembic configuration
+    and the LLM prompt/response cache.
+
+The git history of this repository preserves textbook_quality's original
+commits by Vik Paruchuri. Thank you, Vik, for publishing it under such a
+generous licence.
+
+
+INDEPENDENCE / NO AFFILIATION
+-----------------------------
+
+Marginalia is inspired by Endless (endless.academy), an earlier learning
+product by Vik Paruchuri. Marginalia is NOT affiliated with, endorsed by,
+sponsored by, or otherwise connected to Vik Paruchuri, Endless, or
+endless.academy. "Endless" is not the name of this product and is used here
+only to describe that inspiration. Any mistakes in Marginalia are our own.

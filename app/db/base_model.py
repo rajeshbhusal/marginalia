@@ -1,42 +1,47 @@
-from datetime import datetime, timezone
-from typing import Optional
+import uuid
+from datetime import UTC, datetime
 
-import sqlmodel
 from sqlalchemy import DateTime, TypeDecorator
 from sqlmodel import Field, SQLModel
 
 
-def get_utc_now():
-    return datetime.now(timezone.utc)
+def get_utc_now() -> datetime:
+    return datetime.now(UTC)
 
 
 class TZDateTime(TypeDecorator):
+    """Stores datetimes as UTC and always returns timezone-aware values (SQLite included)."""
+
     impl = DateTime(timezone=True)
     cache_ok = True
 
     def process_bind_param(self, value, dialect):
         if value is not None:
-            value = value.replace(tzinfo=timezone.utc)
+            if value.tzinfo is None:
+                value = value.replace(tzinfo=UTC)
+            value = value.astimezone(UTC)
         return value
 
     def process_result_value(self, value, dialect):
         if value is not None:
-            value = value.replace(tzinfo=timezone.utc)
+            if value.tzinfo is None:
+                value = value.replace(tzinfo=UTC)
+            value = value.astimezone(UTC)
         return value
 
 
-class BaseDBModel(SQLModel):
-    id: Optional[int] = Field(primary_key=True, index=True)
-    created: datetime | None = Field(
+class TimestampedModel(SQLModel):
+    created: datetime = Field(default_factory=get_utc_now, sa_type=TZDateTime)
+    updated: datetime = Field(
         default_factory=get_utc_now,
-        sa_column=sqlmodel.Column(
-            TZDateTime,
-        ),
+        sa_type=TZDateTime,
+        sa_column_kwargs={"onupdate": get_utc_now},
     )
-    updated: datetime | None = Field(
-        default_factory=get_utc_now,
-        sa_column=sqlmodel.Column(
-            TZDateTime,
-            onupdate=get_utc_now,
-        ),
-    )
+
+
+class BaseDBModel(TimestampedModel):
+    id: int | None = Field(default=None, primary_key=True)
+
+
+class UUIDModel(TimestampedModel):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)

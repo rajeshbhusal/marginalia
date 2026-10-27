@@ -1,126 +1,174 @@
-# Textbook Quality
+# Marginalia
 
-This project generates very long, textbook quality pretraining data.  [Here's](https://huggingface.co/datasets/vikp/textbook_quality_programming) a 70M token example.  It can run generations in parallel, against OpenAI, or your own API.  It can generate the topics from scratch, or use a set of seeds you provide.
+Marginalia is an open-source, personalised "learn anything" app. Tell it what you want to learn, how deep you want to go and how you like to learn. It checks where you're starting from with a few quick questions, plans a course you can edit, writes each section just in time as you reach it, and lets you highlight any passage and ask about it in the margin, where an AI tutor answers with the whole lesson in view.
 
-The generator uses retrieval to improve quality.  By default, it will use [Serply](https://serply.io) to do the retrieval, but you can also use [SerpAPI](https://serpapi.com), or disable retrieval.
+![Reading a section, with a tutor thread in the margin beside the highlighted passage](docs/screenshots/reader.png)
 
-The core is extensible, so you can add your own adaptors to connect to new APIs and retrieval backends.
+## What it does
 
-# Installing
+- **Intake:** your goal, a depth (overview, practitioner or rigorous), a learning style (visual, reading, hands-on or intuition first) and anything you already know, followed by 3-4 multiple-choice diagnostic questions (or skip them).
+- **An outline you control:** the answers become a short learner profile and a course outline. Rename, reorder, add or remove modules and sections, or ask the model to rework it ("more hands-on, skip the history"). Nothing is written until you start.
+- **Just-in-time sections:** a section is researched and written when you open it, and the next one is prefetched. Blocks appear as they stream in: explanations with maths (KaTeX), code, Mermaid diagrams (used heavily for visual learners), worked examples, callouts and exercises with progressive hints and solutions. When web research is on, each section lists its sources.
+- **Highlight-and-ask:** select any passage and ask a question. The thread is anchored to that block and quote, and the tutor sees the passage, the blocks around it, the whole section, its research notes and your learner profile. Follow up, resolve or delete threads like comments in a document.
+- **Works everywhere:** a responsive web app with light and dark themes, and a command line that generates a whole course end to end.
 
-## Prerequisites
+<p>
+  <img src="docs/screenshots/outline.png" alt="The editable course outline" width="49%">
+  <img src="docs/screenshots/mobile.png" alt="Reading on a phone" width="22%">
+  <img src="docs/screenshots/dark.png" alt="Dark mode" width="27%">
+</p>
 
-- Python 3.9+ (ideally 3.11)
-- You will need postgres installed. You can install it with `brew install postgres` on a Mac.
+## Quick start (Docker)
 
-## Setup
+You need Docker and an API key for [Claude](https://console.anthropic.com/) (the default) or OpenAI.
 
-- `psql postgres -c "create database textbook;"`
-- `git clone https://github.com/VikParuchuri/textbook_quality.git`
-- `cd textbook_quality`
-- `poetry install`
-- `invoke migrate-dev`
+```bash
+cp .env.example .env          # then set ANTHROPIC_API_KEY (or LLM_PROVIDER=openai + OPENAI_API_KEY)
+docker compose up --build     # or: make up
+```
+
+Open <http://localhost:8000>. Postgres runs in its own container, and migrations run automatically when the app starts.
+
+No API key yet? Set `LLM_PROVIDER=fake` in `.env` to run with an offline stand-in model that writes clearly generic placeholder content, then click **Try the demo course** on the home page. The demo course is a real, hand-written course on Bayesian thinking (with diagrams, maths, code, exercises and a margin thread) that needs no model to read.
+
+> **Run it locally or behind a password.** This version has no user accounts: anyone who can reach the app can read every course and create new ones, which spends your API credits. Before you host it anywhere, set `MARGINALIA_ACCESS_PASSWORD` (see [Hosting on Railway](#hosting-on-railway)).
+
+## Local development
+
+Prerequisites: Python 3.12+ with [uv](https://docs.astral.sh/uv/), Node 22.22+ (Node 24 LTS recommended) and Docker (for Postgres) or a Postgres of your own.
+
+```bash
+make setup     # uv sync + npm ci
+cp .env.example .env
+make dev       # Postgres in Docker, API with auto-reload on :8000, Vite on :5173
+```
+
+Open <http://localhost:5173>. The Vite dev server proxies `/api` to the API. `make help` lists the other targets, and the API docs are at <http://localhost:8000/docs>.
 
 ## Configuration
 
-First, create a `local.env` file in the root directory of the repo to store your secret keys.  Alternatively, you can set any key below as an env var.
+Settings come from environment variables or `.env` (see [`.env.example`](.env.example) and [`app/settings.py`](app/settings.py)).
 
-You can see all the available configuration values in `app/settings.py`.
+| Variable | Default | What it does |
+|---|---|---|
+| `LLM_PROVIDER` | `anthropic` | `anthropic`, `openai`, or `fake` (offline demo content) |
+| `ANTHROPIC_API_KEY` | | Claude API key. Without it, the SDK's own credential lookup is used |
+| `LLM_MODEL` | `claude-opus-5-5` / `gpt-6.1-sol` | Override the model, e.g. `claude-sonnet-5-5` for lower cost |
+| `ANTHROPIC_REFUSAL_FALLBACKS` | `true` | Retry requests declined by Claude's safety classifiers on Anthropic's recommended fallback model |
+| `OPENAI_API_KEY`, `OPENAI_BASE_URL` | | OpenAI, or any OpenAI-compatible server (vLLM, Ollama, ...) |
+| `OPENAI_API_MODE` | `responses` | `chat` uses Chat Completions, for OpenAI-compatible servers |
+| `RESEARCH_BACKEND` | `web` | `web` researches each section with the provider's web search before writing it; `none` skips research |
+| `RESEARCH_MAX_SEARCHES` | `3` | Web searches allowed per section |
+| `EFFORT_*` | `low` / `medium` | How hard the model thinks for diagnostics, planning, research, sections and the tutor |
+| `DATABASE_URL` | local Postgres | Any Postgres connection string, including Supabase's (`postgres://` and `postgresql://` both work) |
+| `DB_SCHEMA` | `public` | Postgres schema for every Marginalia table, including Alembic's version table. It must already exist |
+| `DB_APP_ROLE` | | Login role the app uses; migrations grant it access to `DB_SCHEMA` and add an RLS policy for it |
+| `DATABASE_PGBOUNCER` | auto | `true` for a transaction-mode pooler (turns off prepared-statement caches). Automatic on port 6543 |
+| `MARGINALIA_ACCESS_PASSWORD` | | When set, every page and API route needs this password (except `/api/health`) |
+| `SESSION_SECRET` | | Signs the login cookie. Required with a password; use a long random value |
+| `SESSION_COOKIE_SECURE` | `true` | Send the login cookie over HTTPS only (browsers treat `http://localhost` as secure) |
+| `SESSION_MAX_AGE_DAYS` | `30` | How long a login lasts |
+| `PORT` | `8000` | Port the container listens on (Railway sets it) |
+| `LLM_CACHE` | `false` | Reuse stored responses for identical requests (the CLI turns this on) |
 
-### With OpenAI and retrieval (highest quality)
+**Costs.** With the defaults, each section costs one research call (with up to three web searches) and one writing call, and tutor questions are `low`-effort calls that reuse a cached copy of the section. Sections are only written when opened, so an abandoned course costs little. For a cheaper setup, use `LLM_MODEL=claude-sonnet-5-5` and `RESEARCH_BACKEND=none`.
 
-- Add your OpenAI key, like `OPENAI_KEY=sk-xxxxxx`
-- Add your serply key (`SERPLY_KEY="..."`) or serpapi key (`SERPAPI_KEY="..."`).
-- Add `SEARCH_BACKEND=serply` or `SEARCH_BACKEND=serpapi` to use the appropriate backend.
+### Using Supabase
 
-By default, this will use `gpt-3.5`.  You can use `gpt-4` by setting the env vars `LLM_TYPE`, `LLM_INSTRUCT_TYPE` to `gpt-4`.  You may be able to get away with setting `LLM_EXTENDED_TYPE` to `gpt-4` as well, but you may need longer than 8k context.
+Marginalia works with any Postgres, including [Supabase](https://supabase.com/):
 
-### With vllm or other openai-compatible API and retrieval
+1. In your Supabase project, open **Connect** and copy a connection string. The session pooler (port 5432) or the direct connection is simplest. The transaction pooler (port 6543) also works: Marginalia switches to PgBouncer-safe settings for it automatically.
+2. Set `DATABASE_URL` to it in `.env` (`postgres://` and `?sslmode=require` forms are both fine) and run `uv run alembic upgrade head`.
 
-- Set `OPENAI_KEY` to the value of your API key, or a dummy value.
-- Set `OPENAI_BASE_URL` to the url of your API (like https://vllm-api.com/v1)
-- Set the `LLM_TYPE`, `LLM_INSTRUCT_TYPE`, and `LLM_EXTENDED_TYPE` settings to your model name (like `llama`)
-- Set the model name and max tokens in the `LLM_TYPES` setting.
-- Follow the instructions above for the retrieval setup.
+The migration enables row-level security on Marginalia's tables, so Supabase's auto-generated REST API doesn't expose them. The app connects as the tables' owner, which RLS doesn't restrict.
 
-The generator ideally needs a context length of up to `16k`, but you can get away with `12k` if you need to.  If you've finetuned your own model for textbook gen (based on the prompts cached in this repo), you can use the `FINETUNED` and `INCLUDE_EXAMPLES` settings to reduce token usage.
+**Sharing a Supabase project with other apps.** Keep Marginalia in its own schema, used by a login role that owns only that schema:
 
-### Without retrieval
+1. As an admin, create the role and schema once, e.g. `create role marginalia_app login password '…';` then `create schema marginalia authorization marginalia_app;`. Don't add the schema to the Data API's exposed schemas.
+2. Set `DB_SCHEMA=marginalia` and `DB_APP_ROLE=marginalia_app`, and connect as that role. With Supavisor the user name is `marginalia_app.<project-ref>`; the session pooler on port 5432 is IPv4 and keeps prepared statements working.
 
-- Set `SEARCH_BACKEND=none`
+Every table, index, RLS policy and Alembic's `alembic_version` table is created in `DB_SCHEMA`, and only `DB_SCHEMA` is on the connection's search path, so nothing lands in `public`. Each migration ends with `grant_app_role(...)`, which grants `DB_APP_ROLE` usage on the schema and access to its tables and sequences, and gives new tables an RLS policy for that role only.
 
-# Usage
+## Hosting on Railway
 
-There are three main scripts in the repo.  You can run each script on the output of the previous one.  All outputs will appear by default in `app/data`, which is the specified `DATA_DIR` in settings.
+The repo includes [`railway.json`](railway.json): Railway builds the `Dockerfile`, runs `alembic upgrade head` as a pre-deploy step (the container also runs it on start, which is a no-op once applied), checks `/api/health`, and the app listens on Railway's `$PORT`.
 
-## Generate topics from scratch
+1. Create a service from this GitHub repo (pick the branch to deploy) and generate a public domain for it.
+2. Set these variables on the service. Keep secrets in Railway's variables, never in the repo:
 
-You enter a subject, a file you want to save the topics to, and the number of iterations.  The topics will be deduplicated.
+| Variable | Value |
+|---|---|
+| `DATABASE_URL` | Supabase session pooler string for the app role, e.g. `postgresql://marginalia_app.<project-ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres?sslmode=require` (or a Railway Postgres `${{Postgres.DATABASE_URL}}`) |
+| `DB_SCHEMA` | `marginalia` |
+| `DB_APP_ROLE` | `marginalia_app` |
+| `MARGINALIA_ACCESS_PASSWORD` | The password testers type in |
+| `SESSION_SECRET` | A long random string, e.g. from `openssl rand -hex 32` |
+| `ANTHROPIC_API_KEY` | Your Claude API key |
+| `LLM_MODEL` | Optional, e.g. `claude-sonnet-5-5` to cut costs |
 
-Usage example:
+3. Deploy from the dashboard, or with the CLI: `railway up` from a checkout of the branch.
 
-`python topic_generator.py "computer science with python" python_cs_titles.json --iterations 50`
+Run a single replica: background generation jobs live in the app process.
 
-## Augment topics from seeds
+## Command line
 
-Take a file with existing seeds (in a flat json list), and augment them.  You can pass in the output file from the topic generator as the seed file, or use your own seeds.  Domain is an optional flag to constrain the topics within a domain.
+```bash
+uv run marginalia generate "how vaccines work" --depth overview --style visual --out vaccines.md
+uv run marginalia demo                  # add the demo course
+uv run marginalia export <course-id>    # print a course as Markdown
+```
 
-This will also deduplicate the topics semantically.
+`generate` runs the whole pipeline end to end (the diagnostic questions, which it asks interactively in a terminal, then planning, research and every section) and saves the course in the database too, so you can open it in the app.
 
-Usage example:
+## How it works
 
-`python topic_augmentor.py python_titles.json python_topics.json --domain python`
+```mermaid
+flowchart LR
+  A["Goal, depth, style"] --> B["Diagnostic questions"]
+  B --> C["Learner profile + outline"]
+  C --> D["You edit the outline"]
+  D --> E["Open a section"]
+  E --> F["Research notes (web search)"]
+  F --> G["Write the section as blocks"]
+  G --> H["Read; the next section is prefetched"]
+  H --> I["Highlight and ask"]
+  I --> J["Tutor reply in the margin"]
+```
 
-## Generate textbooks
+- **Backend:** FastAPI, SQLModel/SQLAlchemy 2 (async, asyncpg) and Alembic on Postgres. Generation runs as background jobs whose progress lives on the section row: a section is claimed atomically in the database, completed blocks are saved while the response streams, and a job lost to a restart can be reclaimed once it's stale.
+- **LLM layer** ([`app/llm`](app/llm)): one interface with three providers. Every request uses structured outputs validated against Pydantic schemas, so there's no JSON scraping, token counting or cut-off repair. On Anthropic, effort is set per task, responses stream, refusals are handled and server-side refusal fallbacks are on. Prompts are Jinja templates in [`app/llm/templates`](app/llm/templates).
+- **Web app** ([`frontend`](frontend)): Vite, React 19, TypeScript, Tailwind CSS v4, TanStack Query and React Router. Highlights are anchored by block id plus the quote and the text around it, found again in the rendered text and painted with the CSS Custom Highlight API, so the lesson's DOM is never modified. FastAPI serves the production build from the same origin.
 
-### From titles
+| Path | What's there |
+|---|---|
+| `app/course` | Courses and sections: diagnostics, planning, outline editing, just-in-time generation and their API |
+| `app/tutor` | Highlight-and-ask threads and the tutor |
+| `app/llm` | Providers, prompts, structured-output schemas and the response cache |
+| `app/cli.py` | The `marginalia` command |
+| `alembic/` | Database migrations |
+| `frontend/src` | The web app: `pages`, `components`, and `lib` for anchoring, outline editing and margin layout |
+| `tests/` | Python tests |
 
-This will take a file with a flat json list of topics, and generate one textbook per topic.  The workers flag controls the number of parallel generations.  Lower it if you hit rate limits.
+## Tests
 
-Usage example:
+```bash
+make test        # Python (pytest) and web app (Vitest) tests
+make lint        # ruff and TypeScript checks
+TEST_DATABASE_URL=postgresql://marginalia:marginalia@localhost:5432/marginalia_test uv run pytest
+```
 
-`python book_generator.py topics.json books.jsonl --workers 5`
+The Python tests drive the whole flow through the API with the offline fake model, so they need no API key. They use SQLite unless `TEST_DATABASE_URL` points at a Postgres database (which they reset). The Anthropic and OpenAI adapters are tested against mocked SDK clients. CI runs everything, with the Python tests on Postgres.
 
-You can also override settings with environment variables (instead of using `local.env`).  This example will use a vllm api instead of openai:
+## Roadmap
 
-`LLM_TYPE=llama LLM_INSTRUCT_TYPE=llama LLM_EXTENDED_TYPE=llama OPENAI_KEY="llama" OPENAI_BASE_URL="https://vllm-api.com/v1" python book_generator.py topics.json books.jsonl --workers 10`
+Adaptive exercises graded against stored solutions, folding good tutor answers back into the course, flagging passages many learners ask about, and more: see [docs/ROADMAP.md](docs/ROADMAP.md).
 
-You can see all options by running `python book_generator.py --help`.
+## Credits
 
-Note that courses are cached by default, so regenerating a course with the same name twice will not hit the API again.  The cache is specific to each model and each topic.  You can skip the cache by using the `--revision` option to specify a revision number for the courses.
+Marginalia started as an import of [**textbook_quality**](https://github.com/VikParuchuri/textbook_quality) by [**Vik Paruchuri**](https://github.com/VikParuchuri), released under the MIT License. Its course-generation pipeline, content-block model, prompt ideas and database layer are the foundation Marginalia builds on, and its commit history is preserved in this repository. Thank you, Vik.
 
-### From outlines
+Marginalia is inspired by Endless (endless.academy), an earlier learning product by Vik Paruchuri. **Marginalia is an independent project and is not affiliated with, endorsed by, or sponsored by Vik Paruchuri or Endless.** See [NOTICE](NOTICE) for full attribution.
 
-You can also generate a book from an existing outline by creating a jsonl file with the following fields:
+## Licence
 
-- `topic` - The topic/title of the book
-- `outline` - The outline of the book, as a flat json list.  This needs to be in a specific format, see "clean table of contents" below.
-- `queries` - Up to 2 search queries to use for retrieval.  If you don't want to use retrieval, set this to an empty list.
-
-## Clean tables of contents
-
-This will take in a jsonl file with an existing table of contents and title, and process it into the correct format for book generation.
-
-Usage example:
-
-`python toc_cleaner.py toc.jsonl clean_toc.jsonl`
-
-`toc.jsonl` should have the following fields in each line:
-
-- `title` - The title of the book
-- `toc` - a string containing the table of contents.  This can be poorly formatted
-
-
-# Extending
-
-You can extend this to add in new LLM adaptors, retrieval methods, or tasks.  PRs are very welcome.
-
-- LLM adapters are in `app/llm/adaptors`
-- Retrieval methods are in `app/services/adaptors`.  You may also need to adjust settings in `services/generators/pdf.py`
-- Tasks are in `app/llm/generators`
-
-# Debugging
-
-By default, a lot of exceptions will be hidden to avoid console noise.  Use `DEBUG=true` to display them, like this:
-
-`DEBUG=true python book_generator.py python_topics.json books.jsonl --max 5 --workers 5`
+MIT. See [LICENSE](LICENSE), which keeps the original textbook_quality copyright notice alongside Marginalia's.

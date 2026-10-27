@@ -1,0 +1,41 @@
+{% macro depth_guide(depth) -%}
+{% if depth == "overview" -%}
+Overview: the big picture. Plain language and intuition first, minimal notation, few formulas. Focus on what each idea is, why it matters and how the pieces fit together.
+{%- elif depth == "rigorous" -%}
+Rigorous: precise and thorough. Formal definitions, standard notation, derivations or proofs where the subject has them, edge cases, and exercises that require real reasoning.
+{%- else -%}
+Practitioner: applied understanding. Concrete techniques, realistic examples, code or worked calculations where the subject has them, good practice and common pitfalls.
+{%- endif %}
+{%- endmacro %}
+
+{% macro style_guide(style) -%}
+{% if style == "visual" -%}
+Visual learner: draw it. Use a Mermaid diagram wherever structure, flow, sequence or relationships can be drawn (most sections should have at least one), use tables for comparisons, and describe ideas spatially.
+{%- elif style == "hands_on" -%}
+Hands-on learner: learns by doing. Lead with concrete examples, include runnable code or step-by-step calculations, and give them something to practise.
+{%- elif style == "intuition" -%}
+Intuition-first learner: open with an analogy or a short story that makes the idea feel natural, build understanding informally, then make it precise.
+{%- else -%}
+Reader: prefers clear, well-structured prose with precise definitions and careful step-by-step explanations.
+{%- endif %}
+{%- endmacro %}
+
+{% macro learner_profile(profile) -%}
+{% if profile -%}
+Level: {{ profile.level }}. {{ profile.summary }}
+{% if profile.strengths %}Already comfortable with: {{ profile.strengths | join(", ") }}.
+{% endif %}{% if profile.gaps %}Needs careful building up: {{ profile.gaps | join(", ") }}.{% endif %}
+{%- else -%}
+No diagnostic information; assume a motivated beginner.
+{%- endif %}
+{%- endmacro %}
+
+{% macro outline_text(modules, current_section_id=None) -%}
+{% for module in modules %}
+Module {{ loop.index }}: {{ module.title }}
+{% for section in module.sections %}
+  {{ loop.index }}. {{ section.title }}{% if section.summary %}: {{ section.summary }}{% endif %}{% if current_section_id and section.id == current_section_id %}  <- the section to write now{% endif %}
+
+{% endfor %}
+{% endfor %}
+{%- endmacro %}
