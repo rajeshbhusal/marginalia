@@ -38,6 +38,8 @@ async def test_pages_redirect_to_the_login_page(client, gate):
     page = await client.get("/login?next=/courses/abc")
     assert page.status_code == 200
     assert 'type="password"' in page.text
+    assert '<label for="password">Password</label>' in page.text
+    assert 'name="next" value="/courses/abc"' in page.text
 
 
 async def test_health_stays_open(client, gate):
@@ -48,6 +50,9 @@ async def test_wrong_password_is_rejected(client, gate):
     response = await _login(client, "nope")
     assert response.status_code == 401
     assert auth.COOKIE_NAME not in response.cookies
+    # The error is announced and tied to the password field
+    assert 'role="alert"' in response.text
+    assert 'aria-invalid="true" aria-describedby="password-error"' in response.text
     assert (await client.get("/api/courses")).status_code == 401
 
 
