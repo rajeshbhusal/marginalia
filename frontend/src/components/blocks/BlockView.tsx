@@ -27,7 +27,7 @@ export function BlockView({ block }: { block: Block }) {
 function Label({ icon: Icon, children }: { icon: typeof Lightbulb; children: string }) {
   return (
     <div
-      className="mb-2 flex items-center gap-1.5 font-sans text-xs font-semibold tracking-wide text-ink-3 uppercase"
+      className="mb-2 flex items-center gap-1.5 font-sans text-xs font-semibold tracking-wide text-ink-subtle uppercase"
       data-anchor-ignore
     >
       <Icon className="size-3.5" aria-hidden />
@@ -38,7 +38,7 @@ function Label({ icon: Icon, children }: { icon: typeof Lightbulb; children: str
 
 function ExampleView({ block }: { block: ExampleBlock }) {
   return (
-    <div className="rounded-xl border border-line bg-surface-2/70 px-5 py-4">
+    <div className="rounded-xl border border-line bg-sunken/70 px-5 py-4">
       <Label icon={FlaskConical}>Worked example</Label>
       <h3 className="mb-2 font-sans text-base font-semibold text-ink">{block.title}</h3>
       <Markdown>{block.markdown}</Markdown>
@@ -55,8 +55,8 @@ function ExerciseView({ block }: { block: ExerciseBlock }) {
       <Label icon={PencilLine}>Try it</Label>
       <Markdown>{block.prompt}</Markdown>
       {block.hints.slice(0, hintsShown).map((hint, index) => (
-        <div key={index} className="mt-3 rounded-lg bg-surface-2 px-4 py-2.5">
-          <span className="font-sans text-xs font-semibold text-ink-3" data-anchor-ignore>
+        <div key={index} className="mt-3 rounded-lg bg-sunken px-4 py-2.5">
+          <span className="font-sans text-xs font-semibold text-ink-subtle" data-anchor-ignore>
             Hint {index + 1}
           </span>
           <Markdown compact>{hint}</Markdown>
@@ -83,9 +83,9 @@ function ExerciseView({ block }: { block: ExerciseBlock }) {
 }
 
 const CALLOUTS = {
-  key_idea: { icon: Lightbulb, label: "Key idea", tone: "border-accent bg-accent-soft/60" },
-  definition: { icon: BookOpen, label: "Definition", tone: "border-ink-3 bg-surface-2/70" },
-  tip: { icon: Sparkles, label: "Tip", tone: "border-success bg-success-soft/70" },
+  key_idea: { icon: Lightbulb, label: "Key idea", tone: "border-brand bg-brand-soft/60" },
+  definition: { icon: BookOpen, label: "Definition", tone: "border-line-strong bg-sunken/70" },
+  tip: { icon: Sparkles, label: "Tip", tone: "border-positive bg-positive-soft/70" },
   warning: { icon: TriangleAlert, label: "Watch out", tone: "border-warning bg-warning-soft/70" },
 } as const;
 

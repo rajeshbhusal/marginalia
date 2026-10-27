@@ -1,116 +1,55 @@
 @import "tailwindcss";
+@import "./tokens.css";
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
-
-/* Design tokens. Components use the semantic names (bg-surface, text-ink-2, ...). */
-:root {
-  --bg: #f6f7f9;
-  --surface: #ffffff;
-  --surface-2: #f0f2f5;
-  --ink: #15171c;
-  --ink-2: #474d5a;
-  --ink-3: #7a808e;
-  --line: #e2e5ea;
-  --line-strong: #cdd2da;
-  --accent: #2f5bea;
-  --accent-hover: #2349c8;
-  --accent-ink: #ffffff;
-  --accent-soft: #eaf0ff;
-  --mark: rgb(255 196 0 / 0.3);
-  --mark-strong: rgb(255 170 0 / 0.55);
-  --mark-solid: #f5b400;
-  --success: #12805c;
-  --success-soft: #e3f6ee;
-  --warning: #a35f00;
-  --warning-soft: #fff4dd;
-  --danger: #c7362c;
-  --danger-soft: #fdecea;
-  --code-bg: #f4f5f8;
-  --code-keyword: #8b2fc9;
-  --code-string: #127a4c;
-  --code-number: #b4530a;
-  --code-comment: #7b8190;
-  --code-title: #1f5bd8;
-  --code-attr: #9a4b00;
-  color-scheme: light;
-}
-
-[data-theme="dark"] {
-  --bg: #0e1014;
-  --surface: #161920;
-  --surface-2: #1d2029;
-  --ink: #e9ebf0;
-  --ink-2: #b6bcc8;
-  --ink-3: #868d9b;
-  --line: #272b36;
-  --line-strong: #363b48;
-  --accent: #7e9dff;
-  --accent-hover: #9cb3ff;
-  --accent-ink: #0b1330;
-  --accent-soft: #1b2442;
-  --mark: rgb(255 196 0 / 0.22);
-  --mark-strong: rgb(255 180 0 / 0.45);
-  --mark-solid: #e0a400;
-  --success: #43c493;
-  --success-soft: #11291f;
-  --warning: #f0b45a;
-  --warning-soft: #2c2210;
-  --danger: #ff7b6e;
-  --danger-soft: #331715;
-  --code-bg: #12141a;
-  --code-keyword: #d19bff;
-  --code-string: #7fd8a6;
-  --code-number: #ffb27a;
-  --code-comment: #7f8796;
-  --code-title: #8fb0ff;
-  --code-attr: #ffc27a;
-  color-scheme: dark;
-}
-
-@theme inline {
-  --color-bg: var(--bg);
-  --color-surface: var(--surface);
-  --color-surface-2: var(--surface-2);
-  --color-ink: var(--ink);
-  --color-ink-2: var(--ink-2);
-  --color-ink-3: var(--ink-3);
-  --color-line: var(--line);
-  --color-line-strong: var(--line-strong);
-  --color-accent: var(--accent);
-  --color-accent-hover: var(--accent-hover);
-  --color-accent-ink: var(--accent-ink);
-  --color-accent-soft: var(--accent-soft);
-  --color-mark: var(--mark);
-  --color-mark-solid: var(--mark-solid);
-  --color-success: var(--success);
-  --color-success-soft: var(--success-soft);
-  --color-warning: var(--warning);
-  --color-warning-soft: var(--warning-soft);
-  --color-danger: var(--danger);
-  --color-danger-soft: var(--danger-soft);
-  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Source Serif 4 Variable", ui-serif, Georgia, serif;
-  --font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
-}
 
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
   }
   body {
-    background: var(--bg);
+    background: var(--canvas);
     color: var(--ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
   ::selection {
-    background: color-mix(in srgb, var(--accent) 28%, transparent);
+    background: color-mix(in srgb, var(--brand) 28%, transparent);
   }
   :focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--brand);
     outline-offset: 2px;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Loading placeholders fade in after a moment, so fast loads don't flash */
+@keyframes marginalia-appear {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.appear-delayed {
+  animation: marginalia-appear 160ms ease-out 200ms both;
 }
 
 /* Highlighted passages that have margin threads (CSS Custom Highlight API) */
@@ -137,7 +76,7 @@
 .prose-lesson h3,
 .prose-lesson h4 {
   font-family: var(--font-sans);
-  font-weight: 650;
+  font-weight: 600;
   letter-spacing: -0.01em;
   line-height: 1.3;
   margin-top: 1.6em;
@@ -153,13 +92,13 @@
   font-size: 1em;
 }
 .prose-lesson a {
-  color: var(--accent);
+  color: var(--brand-ink);
   text-decoration: underline;
   text-underline-offset: 3px;
   text-decoration-thickness: 1px;
 }
 .prose-lesson strong {
-  font-weight: 650;
+  font-weight: 600;
 }
 .prose-lesson ul,
 .prose-lesson ol {
@@ -175,17 +114,17 @@
   margin-top: 0.35em;
 }
 .prose-lesson li::marker {
-  color: var(--ink-3);
+  color: var(--ink-subtle);
 }
 .prose-lesson blockquote {
   border-left: 3px solid var(--line-strong);
   padding-left: 1em;
-  color: var(--ink-2);
+  color: var(--ink-muted);
 }
 .prose-lesson code:not(pre code) {
   font-family: var(--font-mono);
   font-size: 0.85em;
-  background: var(--surface-2);
+  background: var(--sunken);
   border: 1px solid var(--line);
   border-radius: 6px;
   padding: 0.1em 0.35em;
@@ -210,7 +149,7 @@
   vertical-align: top;
 }
 .prose-lesson th {
-  background: var(--surface-2);
+  background: var(--sunken);
   font-weight: 600;
 }
 .prose-lesson .katex-display {
@@ -224,8 +163,8 @@
 
 /* Tutor replies and other compact markdown */
 .prose-compact {
-  font-size: 0.925rem;
-  line-height: 1.6;
+  font-size: 0.875rem;
+  line-height: 1.375rem;
 }
 .prose-compact > * + * {
   margin-top: 0.7em;
@@ -241,7 +180,7 @@
   list-style: decimal;
 }
 .prose-compact a {
-  color: var(--accent);
+  color: var(--brand-ink);
   text-decoration: underline;
 }
 .prose-compact strong {
@@ -250,7 +189,7 @@
 .prose-compact code:not(pre code) {
   font-family: var(--font-mono);
   font-size: 0.85em;
-  background: var(--surface-2);
+  background: var(--sunken);
   border-radius: 4px;
   padding: 0.05em 0.3em;
 }
@@ -269,7 +208,7 @@
 .prose-compact blockquote {
   border-left: 3px solid var(--line-strong);
   padding-left: 0.75em;
-  color: var(--ink-2);
+  color: var(--ink-muted);
 }
 .prose-compact .katex-display {
   overflow-x: auto;

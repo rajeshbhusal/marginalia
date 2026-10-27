@@ -27,14 +27,14 @@ export function CodeBlock({
   return (
     <figure className="overflow-hidden rounded-xl border border-line bg-[var(--code-bg)]">
       <div
-        className="flex items-center justify-between border-b border-line px-4 py-1.5 font-sans text-xs text-ink-3"
+        className="flex items-center justify-between border-b border-line px-4 py-1.5 font-sans text-xs text-ink-subtle"
         data-anchor-ignore
       >
         <span>{language || "code"}</span>
         <button
           type="button"
           onClick={copy}
-          className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 hover:bg-surface-2 hover:text-ink"
+          className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 hover:bg-surface-hover hover:text-ink"
         >
           {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
           {copied ? "Copied" : "Copy"}
@@ -44,7 +44,7 @@ export function CodeBlock({
         <code className="hljs" dangerouslySetInnerHTML={{ __html: html }} />
       </pre>
       {caption ? (
-        <figcaption className="border-t border-line px-4 py-2 font-sans text-sm text-ink-2">
+        <figcaption className="border-t border-line px-4 py-2 font-sans text-sm text-ink-muted">
           {caption}
         </figcaption>
       ) : null}

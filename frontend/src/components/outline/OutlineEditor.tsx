@@ -88,7 +88,7 @@ export function OutlineEditor({ course }: { course: Course }) {
     <main className="mx-auto max-w-6xl px-4 pt-8 pb-36 sm:px-6 sm:pt-12">
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0">
-          <p className="text-sm font-medium text-accent">Your course outline</p>
+          <p className="text-sm font-medium text-brand-ink">Your course outline</p>
           {/* A wrapping field, so long titles break onto balanced lines instead of being cut off */}
           <h1 className="mt-1">
             <AutoTextArea
@@ -96,7 +96,7 @@ export function OutlineEditor({ course }: { course: Course }) {
               value={draft.title}
               onChange={(e) => edit({ type: "setCourse", field: "title", value: e.target.value })}
               aria-label="Course title"
-              className="-mx-2 block w-[calc(100%+1rem)] rounded-lg bg-transparent px-2 py-1 font-serif text-3xl leading-tight font-semibold tracking-tight text-balance text-ink hover:bg-surface-2/70 focus:bg-surface focus:outline-none sm:text-4xl"
+              className="-mx-2 block w-[calc(100%+1rem)] rounded-lg bg-transparent px-2 py-1 font-serif text-3xl leading-tight font-semibold tracking-tight text-balance text-ink hover:bg-surface-hover focus:bg-surface focus:outline-none sm:text-4xl"
             />
           </h1>
           <AutoTextArea
@@ -104,9 +104,9 @@ export function OutlineEditor({ course }: { course: Course }) {
             onChange={(e) => edit({ type: "setCourse", field: "description", value: e.target.value })}
             aria-label="Course description"
             placeholder="Describe the course (optional)"
-            className="-mx-2 mt-1 w-full rounded-lg bg-transparent px-2 py-1 text-ink-2 hover:bg-surface-2/70 focus:bg-surface focus:outline-none"
+            className="-mx-2 mt-1 w-full rounded-lg bg-transparent px-2 py-1 text-ink-muted hover:bg-surface-hover focus:bg-surface focus:outline-none"
           />
-          <p className="mt-3 text-sm text-ink-3">
+          <p className="mt-3 text-sm text-ink-subtle">
             Edit anything before you start. Nothing has been written yet: each section is written
             when you reach it.
           </p>
@@ -139,7 +139,7 @@ export function OutlineEditor({ course }: { course: Course }) {
           {course.profile && <ProfileCard profile={course.profile} />}
           <Card className="p-5">
             <p className="font-medium text-ink">Want a different shape?</p>
-            <p className="mt-1 text-sm text-ink-2">
+            <p className="mt-1 text-sm text-ink-muted">
               Describe the changes and Marginalia will rework the outline.
             </p>
             <AutoTextArea
@@ -147,7 +147,7 @@ export function OutlineEditor({ course }: { course: Course }) {
               onChange={(e) => setInstructions(e.target.value)}
               placeholder="e.g. More hands-on, and skip the history"
               aria-label="Changes to make"
-              className="mt-3 min-h-20 w-full rounded-lg border border-line-strong bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-3 focus:border-accent focus:outline-none"
+              className="mt-3 min-h-20 w-full rounded-lg border border-line-strong bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-subtle focus:border-brand focus:outline-none"
             />
             <Button
               variant="secondary"
@@ -159,7 +159,7 @@ export function OutlineEditor({ course }: { course: Course }) {
               <Wand2 className="size-4" aria-hidden />
               Revise outline
             </Button>
-            {revise.isError && <p className="mt-2 text-sm text-danger">{revise.error.message}</p>}
+            {revise.isError && <p className="mt-2 text-sm text-negative-ink">{revise.error.message}</p>}
           </Card>
         </aside>
       </div>
@@ -168,11 +168,11 @@ export function OutlineEditor({ course }: { course: Course }) {
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 sm:px-6">
           <div className="min-w-0 flex-1 text-sm">
             {problems.length > 0 ? (
-              <p className="truncate text-danger">{problems[0]}</p>
+              <p className="truncate text-negative-ink">{problems[0]}</p>
             ) : save.isError ? (
-              <p className="truncate text-danger">Couldn't save: {save.error.message}</p>
+              <p className="truncate text-negative-ink">Couldn't save: {save.error.message}</p>
             ) : (
-              <p className="truncate text-ink-3">
+              <p className="truncate text-ink-subtle">
                 {save.isPending ? "Saving..." : unsaved ? "Unsaved changes" : "All changes saved"}
                 <span className="hidden sm:inline">
                   {" "}
@@ -180,7 +180,7 @@ export function OutlineEditor({ course }: { course: Course }) {
                 </span>
               </p>
             )}
-            {start.isError && <p className="truncate text-danger">{start.error.message}</p>}
+            {start.isError && <p className="truncate text-negative-ink">{start.error.message}</p>}
           </div>
           <Button
             size="lg"
@@ -215,7 +215,7 @@ function ModuleEditor({
   return (
     <li className="rounded-2xl border border-line bg-surface p-4 shadow-sm sm:p-5">
       <div className="flex items-start gap-3">
-        <span className="mt-1 flex size-7 shrink-0 items-center justify-center rounded-full bg-accent-soft text-sm font-semibold text-accent">
+        <span className="mt-1 flex size-7 shrink-0 items-center justify-center rounded-full bg-brand-soft text-sm font-semibold text-brand-ink">
           {index + 1}
         </span>
         <div className="min-w-0 flex-1">
@@ -227,7 +227,7 @@ function ModuleEditor({
             }
             aria-label={`Module ${index + 1} title`}
             placeholder="Module title"
-            className="block w-full rounded-md bg-transparent px-1.5 py-0.5 text-lg font-semibold text-balance text-ink hover:bg-surface-2/70 focus:bg-surface-2 focus:outline-none"
+            className="block w-full rounded-md bg-transparent px-1.5 py-0.5 text-lg font-semibold text-balance text-ink hover:bg-surface-hover focus:bg-sunken focus:outline-none"
           />
           <AutoTextArea
             value={module.summary}
@@ -236,7 +236,7 @@ function ModuleEditor({
             }
             aria-label={`Module ${index + 1} summary`}
             placeholder="What this module covers (optional)"
-            className="w-full rounded-md bg-transparent px-1.5 py-0.5 text-sm text-ink-2 hover:bg-surface-2/70 focus:bg-surface-2 focus:outline-none"
+            className="w-full rounded-md bg-transparent px-1.5 py-0.5 text-sm text-ink-muted hover:bg-surface-hover focus:bg-sunken focus:outline-none"
           />
         </div>
         <div className="flex">
@@ -268,9 +268,9 @@ function ModuleEditor({
         {module.sections.map((section, sectionIndex) => (
           <li
             key={section.key}
-            className="group flex items-start gap-2 rounded-lg px-1 py-1 hover:bg-surface-2/60"
+            className="group flex items-start gap-2 rounded-lg px-1 py-1 hover:bg-surface-hover"
           >
-            <span className="mt-1.5 w-8 shrink-0 text-xs font-medium text-ink-3 tabular-nums">
+            <span className="mt-1.5 w-8 shrink-0 text-xs font-medium text-ink-subtle tabular-nums">
               {index + 1}.{sectionIndex + 1}
             </span>
             <div className="min-w-0 flex-1">
@@ -301,7 +301,7 @@ function ModuleEditor({
                 }
                 aria-label={`Section ${index + 1}.${sectionIndex + 1} summary`}
                 placeholder="What it teaches (optional)"
-                className="w-full rounded-md bg-transparent px-1.5 py-0.5 text-sm text-ink-2 focus:bg-surface focus:outline-none"
+                className="w-full rounded-md bg-transparent px-1.5 py-0.5 text-sm text-ink-muted focus:bg-surface focus:outline-none"
               />
             </div>
             <div className="flex sm:opacity-0 sm:group-focus-within:opacity-100 sm:group-hover:opacity-100">
@@ -335,13 +335,13 @@ function ModuleEditor({
           </li>
         ))}
         {module.sections.length === 0 && (
-          <li className="px-2 py-1 text-sm text-danger">Add at least one section.</li>
+          <li className="px-2 py-1 text-sm text-negative-ink">Add at least one section.</li>
         )}
       </ol>
       <button
         type="button"
         onClick={() => edit({ type: "addSection", module: module.key })}
-        className="mt-2 inline-flex items-center gap-1 rounded-md px-2 py-1 text-sm font-medium text-accent hover:bg-accent-soft sm:ml-10"
+        className="mt-2 inline-flex items-center gap-1 rounded-md px-2 py-1 text-sm font-medium text-brand-ink hover:bg-brand-soft sm:ml-10"
       >
         <Plus className="size-4" aria-hidden />
         Add section
@@ -353,9 +353,9 @@ function ModuleEditor({
 function ProfileCard({ profile }: { profile: LearnerProfile }) {
   return (
     <Card className="p-5">
-      <p className="text-xs font-semibold tracking-wide text-ink-3 uppercase">Where you're starting</p>
+      <p className="text-xs font-semibold tracking-wide text-ink-subtle uppercase">Where you're starting</p>
       <p className="mt-2 font-medium text-ink capitalize">{profile.level}</p>
-      <p className="mt-1 text-sm text-ink-2">{profile.summary}</p>
+      <p className="mt-1 text-sm text-ink-muted">{profile.summary}</p>
       <ProfileList title="You already know" items={profile.strengths} icon={CircleCheck} />
       <ProfileList title="Still to learn" items={profile.gaps} icon={CircleDashed} />
     </Card>
@@ -378,8 +378,8 @@ function ProfileList({
       <p className="text-sm font-medium text-ink">{title}</p>
       <ul className="mt-2 space-y-1.5">
         {items.map((item) => (
-          <li key={item} className="flex gap-2 text-sm text-ink-2">
-            <Icon className="mt-0.5 size-4 shrink-0 text-ink-3" aria-hidden />
+          <li key={item} className="flex gap-2 text-sm text-ink-muted">
+            <Icon className="mt-0.5 size-4 shrink-0 text-ink-subtle" aria-hidden />
             <span className="min-w-0">{item}</span>
           </li>
         ))}

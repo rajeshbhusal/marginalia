@@ -36,7 +36,7 @@ export function HomePage() {
         <h1 className="font-serif text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
           What do you want to learn?
         </h1>
-        <p className="mt-4 text-lg text-ink-2">
+        <p className="mt-4 text-lg text-ink-muted">
           Marginalia plans a course around you, writes each section just in time, and answers
           your questions in the margins.
         </p>
@@ -49,7 +49,7 @@ export function HomePage() {
             value={goal}
             onChange={(event) => setGoal(event.target.value)}
             placeholder="e.g. how the immune system remembers infections"
-            className="h-12 w-full min-w-0 rounded-xl sm:flex-1 border border-line-strong bg-surface px-4 text-base text-ink shadow-sm placeholder:text-ink-3 focus:border-accent focus:outline-none"
+            className="h-12 w-full min-w-0 rounded-xl sm:flex-1 border border-line-strong bg-surface px-4 text-base text-ink shadow-sm placeholder:text-ink-subtle focus:border-brand focus:outline-none"
           />
           <Button type="submit" size="lg" disabled={goal.trim().length < 3}>
             Start
@@ -62,7 +62,7 @@ export function HomePage() {
               key={suggestion}
               type="button"
               onClick={() => setGoal(suggestion)}
-              className="rounded-full border border-line bg-surface px-3 py-1 text-sm text-ink-2 hover:border-line-strong hover:text-ink"
+              className="rounded-full border border-line bg-surface px-3 py-1 text-sm text-ink-muted hover:border-line-strong hover:text-ink"
             >
               {suggestion}
             </button>
@@ -71,28 +71,28 @@ export function HomePage() {
       </section>
 
       <section className="mt-16" aria-labelledby="your-courses">
-        <h2 id="your-courses" className="mb-4 text-sm font-semibold tracking-wide text-ink-3 uppercase">
+        <h2 id="your-courses" className="mb-4 text-sm font-semibold tracking-wide text-ink-subtle uppercase">
           Your courses
         </h2>
         {courses.isPending ? (
-          <div className="flex justify-center py-12 text-ink-3">
+          <div className="flex justify-center py-12 text-ink-subtle">
             <Spinner />
           </div>
         ) : courses.isError ? (
           <ErrorNotice title="Couldn't load your courses" message={courses.error.message} />
         ) : courses.data.length === 0 ? (
           <Card className="flex flex-col items-center gap-4 px-6 py-12 text-center">
-            <BookOpenText className="size-8 text-ink-3" aria-hidden />
+            <BookOpenText className="size-8 text-ink-subtle" aria-hidden />
             <div>
               <p className="font-medium text-ink">No courses yet</p>
-              <p className="mt-1 text-sm text-ink-2">
+              <p className="mt-1 text-sm text-ink-muted">
                 Start one above, or open a ready-made demo course on Bayesian thinking.
               </p>
             </div>
             <Button variant="secondary" onClick={openDemo} loading={demo.isPending}>
               Try the demo course
             </Button>
-            {demo.isError && <p className="text-sm text-danger">{demo.error.message}</p>}
+            {demo.isError && <p className="text-sm text-negative-ink">{demo.error.message}</p>}
           </Card>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -141,7 +141,7 @@ function CourseCard({ course }: { course: CourseListItem }) {
           <Trash2 className="size-4" />
         </IconButton>
       </div>
-      <p className="mt-1 line-clamp-2 text-sm text-ink-2">{course.goal}</p>
+      <p className="mt-1 line-clamp-2 text-sm text-ink-muted">{course.goal}</p>
       <div className="mt-3 flex flex-wrap gap-1.5">
         <Badge>{depthLabel(course.depth)}</Badge>
         <Badge>{styleLabel(course.learning_style)}</Badge>
@@ -149,15 +149,15 @@ function CourseCard({ course }: { course: CourseListItem }) {
       <div className="mt-auto pt-5">
         {course.status === "in_progress" ? (
           <>
-            <div className="h-1.5 overflow-hidden rounded-full bg-surface-2">
-              <div className="h-full rounded-full bg-accent" style={{ width: `${progress}%` }} />
+            <div className="h-1.5 overflow-hidden rounded-full bg-sunken">
+              <div className="h-full rounded-full bg-brand" style={{ width: `${progress}%` }} />
             </div>
-            <p className="mt-2 text-xs text-ink-3">
+            <p className="mt-2 text-xs text-ink-subtle">
               {course.sections_completed} of {plural(course.sections_total, "section")} done
             </p>
           </>
         ) : (
-          <p className="text-xs font-medium text-accent">{STATUS_TEXT[course.status]}</p>
+          <p className="text-xs font-medium text-brand-ink">{STATUS_TEXT[course.status]}</p>
         )}
       </div>
     </Card>

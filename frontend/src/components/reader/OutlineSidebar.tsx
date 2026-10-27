@@ -5,16 +5,16 @@ import type { Course, SectionSummary } from "../../api/types";
 import { IconButton, Spinner } from "../ui";
 
 function StatusIcon({ section }: { section?: SectionSummary }) {
-  if (section?.completed_at) return <CircleCheck className="size-4 text-success" aria-label="Completed" />;
+  if (section?.completed_at) return <CircleCheck className="size-4 text-positive" aria-label="Completed" />;
   switch (section?.status) {
     case "generating":
-      return <Spinner className="size-4 text-accent" />;
+      return <Spinner className="size-4 text-brand-ink" />;
     case "failed":
-      return <CircleAlert className="size-4 text-danger" aria-label="Failed" />;
+      return <CircleAlert className="size-4 text-negative-ink" aria-label="Failed" />;
     case "ready":
-      return <CircleDot className="size-4 text-accent" aria-label="Ready" />;
+      return <CircleDot className="size-4 text-brand-ink" aria-label="Ready" />;
     default:
-      return <Circle className="size-4 text-ink-3" aria-label="Not written yet" />;
+      return <Circle className="size-4 text-ink-subtle" aria-label="Not written yet" />;
   }
 }
 
@@ -26,24 +26,24 @@ function Contents({ course, currentSectionId }: { course: Course; currentSection
   return (
     <nav aria-label="Course contents" className="space-y-6 p-5">
       <div>
-        <Link to="/" className="inline-flex items-center gap-1 text-xs text-ink-3 hover:text-ink">
+        <Link to="/" className="inline-flex items-center gap-1 text-xs text-ink-subtle hover:text-ink">
           <ArrowLeft className="size-3.5" aria-hidden />
           All courses
         </Link>
         <p className="mt-2 font-serif text-lg leading-snug font-semibold text-ink">{course.title}</p>
-        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-surface-2">
+        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-sunken">
           <div
-            className="h-full rounded-full bg-accent transition-[width]"
+            className="h-full rounded-full bg-brand transition-[width]"
             style={{ width: `${total ? (completed / total) * 100 : 0}%` }}
           />
         </div>
-        <p className="mt-1.5 text-xs text-ink-3">
+        <p className="mt-1.5 text-xs text-ink-subtle">
           {completed} of {total} complete
         </p>
       </div>
       {course.outline.map((module, moduleIndex) => (
         <div key={module.id}>
-          <p className="text-xs font-semibold tracking-wide text-ink-3 uppercase">
+          <p className="text-xs font-semibold tracking-wide text-ink-subtle uppercase">
             Module {moduleIndex + 1}
           </p>
           <p className="mt-0.5 text-sm font-semibold text-ink">{module.title}</p>
@@ -58,8 +58,8 @@ function Contents({ course, currentSectionId }: { course: Course; currentSection
                     className={clsx(
                       "flex items-start gap-2 rounded-lg px-2 py-1.5 text-sm",
                       current
-                        ? "bg-accent-soft font-medium text-ink"
-                        : "text-ink-2 hover:bg-surface-2 hover:text-ink",
+                        ? "bg-brand-soft font-medium text-ink"
+                        : "text-ink-muted hover:bg-surface-hover hover:text-ink",
                     )}
                   >
                     <span className="mt-0.5 shrink-0">

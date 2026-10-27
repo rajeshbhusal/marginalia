@@ -262,19 +262,19 @@ function SectionHeader({
       <button
         type="button"
         onClick={onOpenContents}
-        className="mb-4 inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1 text-sm text-ink-2 hover:bg-surface-2 xl:hidden"
+        className="mb-4 inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1 text-sm text-ink-muted hover:bg-surface-hover xl:hidden"
       >
         <ListTree className="size-4" aria-hidden />
         Contents
       </button>
-      <p className="text-sm font-medium text-accent">
+      <p className="text-sm font-medium text-brand-ink">
         Module {section.module_index + 1} · {section.module_title}
       </p>
       <h1 className="mt-2 font-serif text-3xl leading-tight font-semibold tracking-tight text-ink sm:text-4xl">
         {section.title}
       </h1>
-      {section.summary && <p className="mt-3 text-lg text-ink-2">{section.summary}</p>}
-      <p className="mt-3 text-xs text-ink-3">
+      {section.summary && <p className="mt-3 text-lg text-ink-muted">{section.summary}</p>}
+      <p className="mt-3 text-xs text-ink-subtle">
         Section {section.position + 1} of {course.sections.length} · {depthLabel(course.depth)} ·{" "}
         {styleLabel(course.learning_style)}
       </p>
@@ -294,14 +294,14 @@ function MarginSummary({
   onToggleResolved: () => void;
 }) {
   return (
-    <p className="mb-8 flex flex-wrap items-center gap-x-3 gap-y-1 border-y border-line py-2.5 text-sm text-ink-3">
+    <p className="mb-8 flex flex-wrap items-center gap-x-3 gap-y-1 border-y border-line py-2.5 text-sm text-ink-subtle">
       <span>
         {count > 0
           ? `${plural(count, "margin note")} on this section.`
           : "Select any passage to ask the tutor about it."}
       </span>
       {resolved > 0 && (
-        <button type="button" onClick={onToggleResolved} className="text-accent hover:underline">
+        <button type="button" onClick={onToggleResolved} className="text-brand-ink hover:underline">
           {showResolved ? "Hide" : "Show"} {resolved} resolved
         </button>
       )}
@@ -348,19 +348,19 @@ function WritingProgress({ section }: { section: Section }) {
   return (
     <div role="status" className="rounded-xl border border-line bg-surface p-5">
       <div className="flex items-center gap-3 text-sm font-medium text-ink">
-        <Spinner className="size-4 text-accent" />
+        <Spinner className="size-4 text-brand-ink" />
         {STAGE_LABELS[stage]}
         {section.research && stage === "writing" && (
-          <Badge tone="accent">{plural(section.research.sources.length, "source")}</Badge>
+          <Badge tone="brand">{plural(section.research.sources.length, "source")}</Badge>
         )}
       </div>
-      <p className="mt-1 text-sm text-ink-2">{description}</p>
+      <p className="mt-1 text-sm text-ink-muted">{description}</p>
       {!started && (
         <div className="mt-5 animate-pulse space-y-3" aria-hidden>
-          <div className="h-3 w-11/12 rounded bg-surface-2" />
-          <div className="h-3 w-full rounded bg-surface-2" />
-          <div className="h-3 w-4/5 rounded bg-surface-2" />
-          <div className="h-3 w-2/3 rounded bg-surface-2" />
+          <div className="h-3 w-11/12 rounded bg-sunken" />
+          <div className="h-3 w-full rounded bg-sunken" />
+          <div className="h-3 w-4/5 rounded bg-sunken" />
+          <div className="h-3 w-2/3 rounded bg-sunken" />
         </div>
       )}
     </div>
@@ -400,7 +400,7 @@ function SectionFooter({ course, section }: { course: Course; section: Section }
         {section.previous_section_id && (
           <Link
             to={`/courses/${course.id}/learn/${section.previous_section_id}`}
-            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-ink-2 hover:bg-surface-2 hover:text-ink"
+            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-ink-muted hover:bg-surface-hover hover:text-ink"
           >
             <ArrowLeft className="size-4" aria-hidden />
             Previous
@@ -409,7 +409,7 @@ function SectionFooter({ course, section }: { course: Course; section: Section }
         <div className="ml-auto flex flex-wrap items-center gap-2">
           {section.completed_at ? (
             <>
-              <Badge tone="success">
+              <Badge tone="positive">
                 <Check className="size-3.5" aria-hidden />
                 Completed
               </Badge>
@@ -431,7 +431,7 @@ function SectionFooter({ course, section }: { course: Course; section: Section }
       <button
         type="button"
         onClick={rewriteSection}
-        className="inline-flex items-center gap-1.5 text-xs text-ink-3 hover:text-ink"
+        className="inline-flex items-center gap-1.5 text-xs text-ink-subtle hover:text-ink"
       >
         <RefreshCw className="size-3.5" aria-hidden />
         Rewrite this section
@@ -443,7 +443,7 @@ function SectionFooter({ course, section }: { course: Course; section: Section }
 function Sources({ research }: { research: ResearchNotes }) {
   return (
     <section aria-labelledby="sources">
-      <h2 id="sources" className="text-sm font-semibold tracking-wide text-ink-3 uppercase">
+      <h2 id="sources" className="text-sm font-semibold tracking-wide text-ink-subtle uppercase">
         Sources
       </h2>
       <ul className="mt-3 space-y-1.5">
@@ -453,7 +453,7 @@ function Sources({ research }: { research: ResearchNotes }) {
               href={source.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-start gap-1.5 text-sm text-ink-2 hover:text-accent"
+              className="inline-flex items-start gap-1.5 text-sm text-ink-muted hover:text-brand-ink"
             >
               <ExternalLink className="mt-0.5 size-3.5 shrink-0" aria-hidden />
               {source.title}
@@ -462,8 +462,8 @@ function Sources({ research }: { research: ResearchNotes }) {
         ))}
       </ul>
       <details className="mt-4 rounded-xl border border-line bg-surface px-4 py-3">
-        <summary className="cursor-pointer text-sm font-medium text-ink-2">Research notes</summary>
-        <Markdown compact className="mt-3 text-ink-2">
+        <summary className="cursor-pointer text-sm font-medium text-ink-muted">Research notes</summary>
+        <Markdown compact className="mt-3 text-ink-muted">
           {research.notes}
         </Markdown>
       </details>

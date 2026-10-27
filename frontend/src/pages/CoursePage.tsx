@@ -44,7 +44,7 @@ export function CoursePage() {
 
 export function PageSpinner() {
   return (
-    <div className="flex justify-center py-24 text-ink-3">
+    <div className="flex justify-center py-24 text-ink-subtle">
       <Spinner className="size-6" />
     </div>
   );
@@ -72,9 +72,9 @@ function DiagnosticView({ course }: { course: Course }) {
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-10 sm:px-6 sm:py-14">
-      <p className="text-sm font-medium text-accent">{course.title}</p>
+      <p className="text-sm font-medium text-brand-ink">{course.title}</p>
       <h1 className="mt-1 font-serif text-3xl font-semibold tracking-tight">A few quick questions</h1>
-      <p className="mt-2 text-ink-2">
+      <p className="mt-2 text-ink-muted">
         These help the course start where you are. Pick "I'm not sure" whenever you are: a guess
         tells us less than an honest "not sure".
       </p>
@@ -84,7 +84,7 @@ function DiagnosticView({ course }: { course: Course }) {
           <Card key={question.id} className="p-5 sm:p-6">
             <fieldset>
               <legend className="font-medium text-ink">
-                <span className="mr-2 text-ink-3">{index + 1}.</span>
+                <span className="mr-2 text-ink-subtle">{index + 1}.</span>
                 {question.question}
               </legend>
               <div className="mt-4 space-y-2">
@@ -97,8 +97,8 @@ function DiagnosticView({ course }: { course: Course }) {
                         className={clsx(
                           "flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-2.5 text-sm transition-colors",
                           selected
-                            ? "border-accent bg-accent-soft/60 text-ink"
-                            : "border-line text-ink-2 hover:border-line-strong hover:text-ink",
+                            ? "border-brand bg-brand-soft/60 text-ink"
+                            : "border-line text-ink-muted hover:border-line-strong hover:text-ink",
                           value === "unsure" && !selected && "border-dashed",
                         )}
                       >
@@ -107,7 +107,7 @@ function DiagnosticView({ course }: { course: Course }) {
                           name={question.id}
                           checked={selected}
                           onChange={() => setChoices((c) => ({ ...c, [question.id]: value }))}
-                          className="size-4 accent-[var(--accent)]"
+                          className="size-4 accent-[var(--brand)]"
                         />
                         {label}
                       </label>
@@ -145,20 +145,20 @@ function PlanningView({ course }: { course: Course }) {
   const steps = revising ? REVISING_STEPS : PLANNING_STEPS;
   return (
     <main className="mx-auto flex max-w-lg flex-col items-center px-4 py-24 text-center">
-      <Spinner className="size-8 text-accent" />
+      <Spinner className="size-8 text-brand-ink" />
       <h1 className="mt-6 font-serif text-2xl font-semibold">
         {revising ? "Revising your outline" : "Designing your course"}
       </h1>
-      <p className="mt-2 text-ink-2">{course.goal}</p>
-      <ul className="mt-8 space-y-2 text-left text-sm text-ink-2">
+      <p className="mt-2 text-ink-muted">{course.goal}</p>
+      <ul className="mt-8 space-y-2 text-left text-sm text-ink-muted">
         {steps.map((step) => (
           <li key={step} className="flex items-center gap-2">
-            <Check className="size-4 text-ink-3" aria-hidden />
+            <Check className="size-4 text-ink-subtle" aria-hidden />
             {step}
           </li>
         ))}
       </ul>
-      <p className="mt-8 text-xs text-ink-3">This usually takes under a minute.</p>
+      <p className="mt-8 text-xs text-ink-subtle">This usually takes under a minute.</p>
     </main>
   );
 }

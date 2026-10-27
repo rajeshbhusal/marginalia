@@ -127,7 +127,7 @@ export function MarginSheet({
   return (
     <div className="fixed inset-0 z-40" role="dialog" aria-modal="true" aria-label="Margin notes">
       <div className="absolute inset-0 bg-black/30" onClick={onClose} />
-      <div className="absolute inset-x-0 bottom-0 max-h-[78dvh] overflow-y-auto rounded-t-2xl border-t border-line bg-bg px-4 pt-3 pb-8 shadow-2xl">
+      <div className="absolute inset-x-0 bottom-0 max-h-[78dvh] overflow-y-auto rounded-t-2xl border-t border-line bg-canvas px-4 pt-3 pb-8 shadow-2xl">
         <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-line-strong" />
         <div className="mb-3 flex items-center justify-between">
           <p className="font-medium text-ink">Margin notes</p>

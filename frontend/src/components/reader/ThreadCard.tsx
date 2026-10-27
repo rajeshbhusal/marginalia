@@ -12,7 +12,7 @@ const QUICK_QUESTIONS = ["Explain this more simply", "Give me an example", "Why 
 function TutorMark() {
   return (
     <span
-      className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent"
+      className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand-ink"
       aria-label="Tutor"
     >
       <Sparkles className="size-3.5" aria-hidden />
@@ -22,7 +22,7 @@ function TutorMark() {
 
 function Quote({ text }: { text: string }) {
   return (
-    <blockquote className="line-clamp-3 border-l-2 border-mark-solid pl-2.5 font-serif text-sm text-ink-2 italic">
+    <blockquote className="line-clamp-3 border-l-2 border-mark-solid pl-2.5 font-serif text-sm text-ink-muted italic">
       {text}
     </blockquote>
   );
@@ -65,7 +65,7 @@ export function ThreadCard({
       onClick={onActivate}
       className={clsx(
         "rounded-xl border bg-surface p-3.5 shadow-sm transition-[border-color,box-shadow]",
-        active ? "border-accent/50 shadow-md ring-2 ring-accent/15" : "border-line hover:border-line-strong",
+        active ? "border-brand/50 shadow-md ring-2 ring-brand/15" : "border-line hover:border-line-strong",
       )}
     >
       <div className="flex items-start gap-1">
@@ -93,7 +93,7 @@ export function ThreadCard({
       </div>
 
       {thread.resolved && !active ? (
-        <p className="mt-2 text-xs text-ink-3">Resolved · {thread.messages[0]?.content}</p>
+        <p className="mt-2 text-xs text-ink-subtle">Resolved · {thread.messages[0]?.content}</p>
       ) : (
         <div className="mt-3 space-y-3">
           {thread.messages.map((message) =>
@@ -122,7 +122,7 @@ export function ThreadCard({
         </div>
       )}
 
-      {reply.isError && <p className="mt-2 text-xs text-danger">{reply.error.message}</p>}
+      {reply.isError && <p className="mt-2 text-xs text-negative-ink">{reply.error.message}</p>}
       {active && !thread.resolved && (
         <form
           onSubmit={(event: FormEvent) => {
@@ -138,7 +138,7 @@ export function ThreadCard({
             onKeyDown={submitOnEnter(send)}
             placeholder="Ask a follow-up..."
             aria-label="Follow-up question"
-            className="max-h-40 min-w-0 flex-1 rounded-lg border border-line bg-surface-2/50 px-3 py-2 text-sm text-ink placeholder:text-ink-3 focus:border-accent focus:outline-none"
+            className="max-h-40 min-w-0 flex-1 rounded-lg border border-line bg-sunken/50 px-3 py-2 text-sm text-ink placeholder:text-ink-subtle focus:border-brand focus:outline-none"
           />
           <IconButton type="submit" label="Send" disabled={!text.trim() || reply.isPending}>
             <SendHorizontal className="size-4" />
@@ -185,7 +185,7 @@ export function Composer({
         event.preventDefault();
         ask();
       }}
-      className="rounded-xl border border-accent/50 bg-surface p-3.5 shadow-md ring-2 ring-accent/15"
+      className="rounded-xl border border-brand/50 bg-surface p-3.5 shadow-md ring-2 ring-brand/15"
     >
       <Quote text={anchor.quote} />
       {create.isPending ? (
@@ -194,7 +194,7 @@ export function Composer({
           <div className="flex items-center gap-2.5">
             <TutorMark />
             <TypingDots label="The tutor is thinking" />
-            <span className="text-xs text-ink-3">Reading the passage...</span>
+            <span className="text-xs text-ink-subtle">Reading the passage...</span>
           </div>
         </div>
       ) : (
@@ -206,7 +206,7 @@ export function Composer({
             onKeyDown={submitOnEnter(() => ask())}
             placeholder="What would you like to know about this?"
             aria-label="Your question"
-            className="mt-3 max-h-48 w-full rounded-lg border border-line bg-surface-2/50 px-3 py-2 text-sm text-ink placeholder:text-ink-3 focus:border-accent focus:outline-none"
+            className="mt-3 max-h-48 w-full rounded-lg border border-line bg-sunken/50 px-3 py-2 text-sm text-ink placeholder:text-ink-subtle focus:border-brand focus:outline-none"
           />
           <div className="mt-2 flex flex-wrap gap-1.5">
             {QUICK_QUESTIONS.map((quick) => (
@@ -214,13 +214,13 @@ export function Composer({
                 key={quick}
                 type="button"
                 onClick={() => ask(quick)}
-                className="rounded-full border border-line px-2.5 py-0.5 text-xs text-ink-2 hover:border-accent hover:text-accent"
+                className="rounded-full border border-line px-2.5 py-0.5 text-xs text-ink-muted hover:border-brand hover:text-brand-ink"
               >
                 {quick}
               </button>
             ))}
           </div>
-          {create.isError && <p className="mt-2 text-xs text-danger">{create.error.message}</p>}
+          {create.isError && <p className="mt-2 text-xs text-negative-ink">{create.error.message}</p>}
           <div className="mt-3 flex justify-end gap-2">
             <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
               Cancel

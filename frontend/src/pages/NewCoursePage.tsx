@@ -35,7 +35,7 @@ export function NewCoursePage() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
       <h1 className="font-serif text-3xl font-semibold tracking-tight sm:text-4xl">New course</h1>
-      <p className="mt-2 text-ink-2">
+      <p className="mt-2 text-ink-muted">
         Tell Marginalia what you're after. You'll answer a few quick questions next, then review
         the outline before anything is written.
       </p>
@@ -49,7 +49,7 @@ export function NewCoursePage() {
             maxLength={500}
             required
             autoFocus={!goal}
-            className="min-h-12 w-full rounded-xl border border-line-strong bg-surface px-4 py-3 text-base text-ink placeholder:text-ink-3 focus:border-accent focus:outline-none"
+            className="min-h-12 w-full rounded-xl border border-line-strong bg-surface px-4 py-3 text-base text-ink placeholder:text-ink-subtle focus:border-brand focus:outline-none"
           />
         </Step>
 
@@ -93,7 +93,7 @@ export function NewCoursePage() {
             onChange={(event) => setBackground(event.target.value)}
             placeholder="e.g. I studied chemistry at school but never biology"
             maxLength={1000}
-            className="min-h-12 w-full rounded-xl border border-line-strong bg-surface px-4 py-3 text-base text-ink placeholder:text-ink-3 focus:border-accent focus:outline-none"
+            className="min-h-12 w-full rounded-xl border border-line-strong bg-surface px-4 py-3 text-base text-ink placeholder:text-ink-subtle focus:border-brand focus:outline-none"
           />
         </Step>
 
@@ -102,7 +102,7 @@ export function NewCoursePage() {
         )}
         <div className="flex items-center justify-end gap-3">
           {create.isPending && (
-            <span className="text-sm text-ink-3">Writing a few quick questions...</span>
+            <span className="text-sm text-ink-subtle">Writing a few quick questions...</span>
           )}
           <Button type="submit" size="lg" loading={create.isPending} disabled={goal.trim().length < 3}>
             Continue
@@ -128,11 +128,11 @@ function Step({
     <Card className="p-5 sm:p-6">
       <fieldset>
         <legend className="mb-4 flex items-center gap-3 font-medium text-ink">
-          <span className="flex size-7 items-center justify-center rounded-full bg-accent-soft text-sm font-semibold text-accent">
+          <span className="flex size-7 items-center justify-center rounded-full bg-brand-soft text-sm font-semibold text-brand-ink">
             {number}
           </span>
           {title}
-          {optional && <span className="text-sm font-normal text-ink-3">Optional</span>}
+          {optional && <span className="text-sm font-normal text-ink-subtle">Optional</span>}
         </legend>
         {children}
       </fieldset>
@@ -160,15 +160,15 @@ function Choice({
       className={clsx(
         "flex cursor-pointer gap-3 rounded-xl border p-4 transition-colors",
         checked
-          ? "border-accent bg-accent-soft/60 ring-1 ring-accent"
-          : "border-line hover:border-line-strong hover:bg-surface-2/60",
+          ? "border-brand bg-brand-soft/60 ring-1 ring-brand"
+          : "border-line hover:border-line-strong hover:bg-surface-hover",
       )}
     >
       <input type="radio" name={name} checked={checked} onChange={onChange} className="sr-only" />
-      {icon && <span className={clsx("mt-0.5", checked ? "text-accent" : "text-ink-3")}>{icon}</span>}
+      {icon && <span className={clsx("mt-0.5", checked ? "text-brand-ink" : "text-ink-subtle")}>{icon}</span>}
       <span>
         <span className="block font-medium text-ink">{label}</span>
-        <span className="mt-0.5 block text-sm text-ink-2">{description}</span>
+        <span className="mt-0.5 block text-sm text-ink-muted">{description}</span>
       </span>
     </label>
   );

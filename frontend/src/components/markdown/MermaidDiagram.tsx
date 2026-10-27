@@ -52,21 +52,21 @@ export function MermaidDiagram({ code, caption }: { code: string; caption?: stri
         />
       ) : result.error ? (
         <div className="space-y-2 font-sans text-sm" data-anchor-ignore>
-          <p className="text-ink-2">This diagram couldn't be drawn, so here is its source.</p>
-          <pre className="overflow-x-auto rounded-lg bg-surface-2 p-3 font-mono text-xs text-ink-2">
+          <p className="text-ink-muted">This diagram couldn't be drawn, so here is its source.</p>
+          <pre className="overflow-x-auto rounded-lg bg-sunken p-3 font-mono text-xs text-ink-muted">
             {code}
           </pre>
         </div>
       ) : (
         <div
-          className="flex h-40 items-center justify-center rounded-lg bg-surface-2 font-sans text-sm text-ink-3"
+          className="flex h-40 items-center justify-center rounded-lg bg-sunken font-sans text-sm text-ink-subtle"
           data-anchor-ignore
         >
           Drawing diagram...
         </div>
       )}
       {caption ? (
-        <figcaption className="mt-3 text-center font-sans text-sm text-ink-2">{caption}</figcaption>
+        <figcaption className="mt-3 text-center font-sans text-sm text-ink-muted">{caption}</figcaption>
       ) : null}
     </figure>
   );
