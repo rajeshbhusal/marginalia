@@ -256,7 +256,7 @@ function ModuleEditor({
             placeholder="Module title"
             className={clsx(
               INLINE_FIELD,
-              "px-1.5 py-0.5 text-lg font-semibold text-balance text-ink placeholder:text-ink-subtle hover:bg-surface-hover",
+              "px-1.5 py-0.5 text-lg font-semibold text-balance text-ink placeholder:text-ink-subtle hover:bg-surface-hover pointer-coarse:py-2",
             )}
           />
           <AutoTextArea
@@ -322,7 +322,7 @@ function ModuleEditor({
                 placeholder="Section title"
                 className={clsx(
                   INLINE_FIELD,
-                  "px-1.5 py-0.5 text-base font-medium text-balance text-ink placeholder:text-ink-subtle",
+                  "px-1.5 py-0.5 text-base font-medium text-balance text-ink placeholder:text-ink-subtle pointer-coarse:py-2 pointer-coarse:leading-7",
                 )}
               />
               <AutoTextArea

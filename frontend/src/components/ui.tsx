@@ -16,11 +16,11 @@ type ButtonSize = "sm" | "md" | "lg" | "xl";
 
 // One primary per view; secondary and ghost for everything else
 const VARIANTS: Record<ButtonVariant, string> = {
-  primary: "bg-brand text-on-brand hover:bg-brand-hover",
+  primary: "bg-brand text-on-brand hover:bg-brand-hover active:bg-brand-hover",
   secondary:
-    "border border-line-strong bg-surface text-ink hover:border-line-control hover:bg-surface-hover",
-  ghost: "text-ink-muted hover:bg-surface-hover hover:text-ink",
-  danger: "text-negative-ink hover:bg-negative-soft",
+    "border border-line-strong bg-surface text-ink hover:border-line-control hover:bg-surface-hover active:bg-sunken",
+  ghost: "text-ink-muted hover:bg-surface-hover hover:text-ink active:bg-sunken",
+  danger: "text-negative-ink hover:bg-negative-soft active:bg-negative-soft",
 };
 
 // 32, 36 and 40px tall (48px beside a large input); at least 44px on touch screens
@@ -77,7 +77,7 @@ export function IconButton({
       title={label}
       className={clsx(
         "inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-ink-subtle transition-colors pointer-coarse:min-h-11 pointer-coarse:min-w-11",
-        "hover:bg-surface-hover hover:text-ink disabled:pointer-events-none disabled:text-ink-faint",
+        "hover:bg-surface-hover hover:text-ink active:bg-sunken disabled:pointer-events-none disabled:text-ink-faint",
         className,
       )}
       {...props}

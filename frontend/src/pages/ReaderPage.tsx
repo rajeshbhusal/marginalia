@@ -216,7 +216,8 @@ function SectionView({
 
   return (
     <div className="flex gap-10 px-4 py-8 sm:px-8 lg:py-10">
-      <article ref={articleRef} onClick={onArticleClick} className="min-w-0 max-w-[44rem] flex-1">
+      {/* 40rem keeps lesson lines to about 72 characters */}
+      <article ref={articleRef} onClick={onArticleClick} className="min-w-0 max-w-[40rem] flex-1">
         <SectionHeader course={course} section={section} onOpenContents={onOpenContents} />
         {ready && (
           <MarginSummary
@@ -469,7 +470,7 @@ function Sources({ research }: { research: ResearchNotes }) {
               href={source.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-start gap-2 py-1 text-sm text-ink-muted underline-offset-4 hover:text-brand-ink hover:underline"
+              className="inline-flex items-start gap-2 py-1 text-sm text-ink-muted underline-offset-4 hover:text-brand-ink hover:underline pointer-coarse:min-h-11 pointer-coarse:items-center"
             >
               <ExternalLink className="mt-0.5 size-4 shrink-0" aria-hidden />
               {source.title}

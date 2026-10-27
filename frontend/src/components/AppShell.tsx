@@ -14,7 +14,11 @@ export function AppShell() {
     <div className="min-h-dvh">
       <header className="sticky top-0 z-30 border-b border-line bg-canvas">
         <div className="mx-auto flex h-14 max-w-[1440px] items-center gap-2 px-4 sm:gap-3 sm:px-6">
-          <Link to="/" aria-label="Marginalia home" className="-ml-1 rounded-lg p-1">
+          <Link
+            to="/"
+            aria-label="Marginalia home"
+            className="-ml-1 flex items-center rounded-lg p-1 pointer-coarse:min-h-11"
+          >
             <Logo />
           </Link>
           {config.data?.demo && (
