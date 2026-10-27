@@ -5,14 +5,15 @@ import type { Course, SectionSummary } from "../../api/types";
 import { IconButton, Spinner } from "../ui";
 
 function StatusIcon({ section }: { section?: SectionSummary }) {
+  // Shape tells the states apart; colour is kept for done (positive) and failed (negative)
   if (section?.completed_at) return <CircleCheck className="size-4 text-positive" aria-label="Completed" />;
   switch (section?.status) {
     case "generating":
-      return <Spinner className="size-4 text-brand-ink" />;
+      return <Spinner className="size-4 text-ink-subtle" />;
     case "failed":
-      return <CircleAlert className="size-4 text-negative-ink" aria-label="Failed" />;
+      return <CircleAlert className="size-4 text-negative" aria-label="Failed" />;
     case "ready":
-      return <CircleDot className="size-4 text-brand-ink" aria-label="Ready" />;
+      return <CircleDot className="size-4 text-ink-muted" aria-label="Ready" />;
     default:
       return <Circle className="size-4 text-ink-subtle" aria-label="Not written yet" />;
   }
@@ -26,27 +27,37 @@ function Contents({ course, currentSectionId }: { course: Course; currentSection
   return (
     <nav aria-label="Course contents" className="space-y-6 p-5">
       <div>
-        <Link to="/" className="inline-flex items-center gap-1 text-xs text-ink-subtle hover:text-ink">
-          <ArrowLeft className="size-3.5" aria-hidden />
-          All courses
+        <Link
+          to="/"
+          className="-ml-2 inline-flex h-8 items-center gap-1.5 rounded-lg px-2 text-sm text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink pointer-coarse:min-h-11"
+        >
+          <ArrowLeft className="size-4" aria-hidden />
+          My courses
         </Link>
-        <p className="mt-2 font-serif text-lg leading-snug font-semibold text-ink">{course.title}</p>
-        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-sunken">
+        <p className="mt-3 font-serif text-lg leading-snug font-semibold text-balance text-ink">
+          {course.title}
+        </p>
+        <div
+          role="progressbar"
+          aria-label="Course progress"
+          aria-valuenow={completed}
+          aria-valuemin={0}
+          aria-valuemax={total}
+          className="mt-4 h-1.5 overflow-hidden rounded-full bg-sunken"
+        >
           <div
             className="h-full rounded-full bg-brand transition-[width]"
             style={{ width: `${total ? (completed / total) * 100 : 0}%` }}
           />
         </div>
-        <p className="mt-1.5 text-xs text-ink-subtle">
+        <p className="mt-2 text-xs text-ink-subtle tabular-nums">
           {completed} of {total} complete
         </p>
       </div>
       {course.outline.map((module, moduleIndex) => (
         <div key={module.id}>
-          <p className="text-xs font-semibold tracking-wide text-ink-subtle uppercase">
-            Module {moduleIndex + 1}
-          </p>
-          <p className="mt-0.5 text-sm font-semibold text-ink">{module.title}</p>
+          <p className="text-xs font-medium text-ink-subtle">Module {moduleIndex + 1}</p>
+          <p className="mt-0.5 text-sm font-semibold text-pretty text-ink">{module.title}</p>
           <ul className="mt-2 space-y-0.5">
             {module.sections.map((section) => {
               const current = section.id === currentSectionId;
@@ -56,7 +67,7 @@ function Contents({ course, currentSectionId }: { course: Course; currentSection
                     to={`/courses/${course.id}/learn/${section.id}`}
                     aria-current={current ? "page" : undefined}
                     className={clsx(
-                      "flex items-start gap-2 rounded-lg px-2 py-1.5 text-sm",
+                      "flex items-start gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors pointer-coarse:py-3",
                       current
                         ? "bg-brand-soft font-medium text-ink"
                         : "text-ink-muted hover:bg-surface-hover hover:text-ink",
@@ -99,7 +110,7 @@ export function OutlineSidebar({
       {open && (
         <div className="fixed inset-0 z-40 xl:hidden" role="dialog" aria-modal="true">
           <div className="absolute inset-0 bg-black/30" onClick={onClose} />
-          <div className="absolute inset-y-0 left-0 w-80 max-w-[85vw] overflow-y-auto bg-surface shadow-xl">
+          <div className="absolute inset-y-0 left-0 w-80 max-w-[85vw] overflow-y-auto bg-surface shadow-(--elevation-lg)">
             <div className="flex justify-end p-2">
               <IconButton label="Close contents" onClick={onClose}>
                 <X className="size-4" />

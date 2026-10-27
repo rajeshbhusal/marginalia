@@ -16,7 +16,7 @@ type ButtonSize = "sm" | "md" | "lg" | "xl";
 
 // One primary per view; secondary and ghost for everything else
 const VARIANTS: Record<ButtonVariant, string> = {
-  primary: "bg-brand text-on-brand shadow-(--elevation-xs) hover:bg-brand-hover",
+  primary: "bg-brand text-on-brand hover:bg-brand-hover",
   secondary:
     "border border-line-strong bg-surface text-ink hover:border-line-control hover:bg-surface-hover",
   ghost: "text-ink-muted hover:bg-surface-hover hover:text-ink",

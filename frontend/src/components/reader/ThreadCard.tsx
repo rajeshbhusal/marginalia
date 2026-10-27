@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { Check, RotateCcw, SendHorizontal, Sparkles, Trash2 } from "lucide-react";
+import { Check, CircleAlert, RotateCcw, SendHorizontal, Sparkles, Trash2 } from "lucide-react";
 import { type FormEvent, type KeyboardEvent, useState } from "react";
 import { useCreateThread, useDeleteThread, useReply, useResolveThread } from "../../api/hooks";
 import type { Thread } from "../../api/types";
@@ -22,9 +22,18 @@ function TutorMark() {
 
 function Quote({ text }: { text: string }) {
   return (
-    <blockquote className="line-clamp-3 border-l-2 border-mark-solid pl-2.5 font-serif text-sm text-ink-muted italic">
+    <blockquote className="line-clamp-3 border-l-2 border-mark-solid pl-3 font-serif text-sm text-ink-muted italic">
       {text}
     </blockquote>
+  );
+}
+
+function ErrorLine({ message }: { message: string }) {
+  return (
+    <p className="mt-2 flex gap-2 text-sm text-negative-ink">
+      <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
+      {message}
+    </p>
   );
 }
 
@@ -64,8 +73,10 @@ export function ThreadCard({
     <div
       onClick={onActivate}
       className={clsx(
-        "rounded-xl border bg-surface p-3.5 shadow-sm transition-[border-color,box-shadow]",
-        active ? "border-brand/50 shadow-md ring-2 ring-brand/15" : "border-line hover:border-line-strong",
+        "rounded-xl border bg-surface p-4 transition-[border-color,box-shadow]",
+        active
+          ? "border-brand/50 shadow-(--elevation-md) ring-2 ring-brand/15"
+          : "border-line shadow-(--elevation-xs) hover:border-line-strong",
       )}
     >
       <div className="flex items-start gap-1">
@@ -102,7 +113,7 @@ export function ThreadCard({
                 {message.content}
               </p>
             ) : (
-              <div key={message.id} className="flex gap-2.5">
+              <div key={message.id} className="flex gap-3">
                 <TutorMark />
                 <Markdown compact className="min-w-0 flex-1 text-ink">
                   {message.content}
@@ -113,7 +124,7 @@ export function ThreadCard({
           {reply.isPending && (
             <>
               <p className="text-sm font-medium text-ink">{reply.variables.content}</p>
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-3">
                 <TutorMark />
                 <TypingDots label="The tutor is thinking" />
               </div>
@@ -122,7 +133,7 @@ export function ThreadCard({
         </div>
       )}
 
-      {reply.isError && <p className="mt-2 text-xs text-negative-ink">{reply.error.message}</p>}
+      {reply.isError && <ErrorLine message={reply.error.message} />}
       {active && !thread.resolved && (
         <form
           onSubmit={(event: FormEvent) => {
@@ -130,15 +141,15 @@ export function ThreadCard({
             send();
           }}
           onClick={(event) => event.stopPropagation()}
-          className="mt-3 flex items-end gap-1.5 border-t border-line pt-3"
+          className="mt-3 flex items-end gap-2 border-t border-line pt-3"
         >
           <AutoTextArea
             value={text}
             onChange={(event) => setText(event.target.value)}
             onKeyDown={submitOnEnter(send)}
-            placeholder="Ask a follow-up..."
+            placeholder="Ask a follow-up…"
             aria-label="Follow-up question"
-            className="max-h-40 min-w-0 flex-1 rounded-lg border border-line bg-sunken/50 px-3 py-2 text-sm text-ink placeholder:text-ink-subtle focus:border-brand focus:outline-none"
+            className="max-h-40 min-w-0 flex-1 rounded-lg border border-line-control bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-subtle"
           />
           <IconButton type="submit" label="Send" disabled={!text.trim() || reply.isPending}>
             <SendHorizontal className="size-4" />
@@ -185,16 +196,16 @@ export function Composer({
         event.preventDefault();
         ask();
       }}
-      className="rounded-xl border border-brand/50 bg-surface p-3.5 shadow-md ring-2 ring-brand/15"
+      className="rounded-xl border border-brand/50 bg-surface p-4 shadow-(--elevation-md) ring-2 ring-brand/15"
     >
       <Quote text={anchor.quote} />
       {create.isPending ? (
         <div className="mt-3 space-y-3">
           <p className="text-sm font-medium text-ink">{question}</p>
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3">
             <TutorMark />
             <TypingDots label="The tutor is thinking" />
-            <span className="text-xs text-ink-subtle">Reading the passage...</span>
+            <span className="text-xs text-ink-subtle">Reading the passage…</span>
           </div>
         </div>
       ) : (
@@ -206,7 +217,7 @@ export function Composer({
             onKeyDown={submitOnEnter(() => ask())}
             placeholder="What would you like to know about this?"
             aria-label="Your question"
-            className="mt-3 max-h-48 w-full rounded-lg border border-line bg-sunken/50 px-3 py-2 text-sm text-ink placeholder:text-ink-subtle focus:border-brand focus:outline-none"
+            className="mt-3 max-h-48 w-full rounded-lg border border-line-control bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-subtle"
           />
           <div className="mt-2 flex flex-wrap gap-1.5">
             {QUICK_QUESTIONS.map((quick) => (
@@ -214,13 +225,13 @@ export function Composer({
                 key={quick}
                 type="button"
                 onClick={() => ask(quick)}
-                className="rounded-full border border-line px-2.5 py-0.5 text-xs text-ink-muted hover:border-brand hover:text-brand-ink"
+                className="inline-flex items-center rounded-full border border-line px-3 py-1 text-xs text-ink-muted transition-colors hover:border-brand hover:text-brand-ink pointer-coarse:min-h-11"
               >
                 {quick}
               </button>
             ))}
           </div>
-          {create.isError && <p className="mt-2 text-xs text-negative-ink">{create.error.message}</p>}
+          {create.isError && <ErrorLine message={create.error.message} />}
           <div className="mt-3 flex justify-end gap-2">
             <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
               Cancel

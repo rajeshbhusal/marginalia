@@ -62,7 +62,7 @@ export function MermaidDiagram({ code, caption }: { code: string; caption?: stri
           className="flex h-40 items-center justify-center rounded-lg bg-sunken font-sans text-sm text-ink-subtle"
           data-anchor-ignore
         >
-          Drawing diagram...
+          Drawing diagram…
         </div>
       )}
       {caption ? (
