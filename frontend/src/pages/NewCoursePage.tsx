@@ -140,7 +140,10 @@ function Step({
 }) {
   const heading = (
     <>
-      <span className="flex size-6 shrink-0 items-center justify-center rounded-full border border-line-strong text-xs font-semibold text-ink-muted tabular-nums">
+      <span
+        aria-hidden
+        className="flex size-6 shrink-0 items-center justify-center rounded-full border border-line-strong text-xs font-semibold text-ink-muted tabular-nums"
+      >
         {number}
       </span>
       <span className="text-base font-semibold text-ink">{title}</span>
@@ -184,9 +187,11 @@ function Choice({
   return (
     <label
       className={clsx(
-        "flex cursor-pointer gap-3 rounded-xl border bg-surface p-4 transition-colors",
+        "flex cursor-pointer gap-3 rounded-xl border p-4 transition-colors",
         "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand",
-        checked ? "border-brand bg-brand-soft ring-1 ring-brand" : "border-line hover:border-line-strong",
+        checked
+          ? "border-brand bg-brand-soft ring-1 ring-brand"
+          : "border-line bg-surface hover:border-line-strong",
       )}
     >
       <input type="radio" name={name} checked={checked} onChange={onChange} className="sr-only" />

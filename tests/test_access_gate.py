@@ -42,6 +42,12 @@ async def test_pages_redirect_to_the_login_page(client, gate):
     assert 'name="next" value="/courses/abc"' in page.text
 
 
+async def test_the_login_page_escapes_the_next_path(client, gate):
+    page = await client.get("/login", params={"next": '/"><script>alert(1)</script>'})
+    assert "<script>alert(1)</script>" not in page.text
+    assert 'value="/&quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;"' in page.text
+
+
 async def test_health_stays_open(client, gate):
     assert (await client.get("/api/health")).status_code == 200
 

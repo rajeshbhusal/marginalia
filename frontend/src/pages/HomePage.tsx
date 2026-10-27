@@ -94,7 +94,12 @@ export function HomePage() {
             title="Couldn't load your courses"
             message={courses.error.message}
             action={
-              <Button variant="secondary" size="sm" onClick={() => void courses.refetch()}>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => void courses.refetch()}
+                loading={courses.isFetching}
+              >
                 Try again
               </Button>
             }
@@ -206,7 +211,10 @@ const STATUS: Record<
 };
 
 function CourseStatus({ status }: { status: keyof typeof STATUS }) {
-  const { text, icon: Icon, tone } = STATUS[status];
+  // A status this version doesn't know (a newer API, say) shows nothing rather than failing
+  const entry: (typeof STATUS)[keyof typeof STATUS] | undefined = STATUS[status];
+  if (!entry) return null;
+  const { text, icon: Icon, tone } = entry;
   return (
     <p className={clsx("flex items-center gap-2 text-sm font-medium", tone)}>
       {Icon ? <Icon className="size-4 shrink-0" aria-hidden /> : <Spinner className="size-4 shrink-0" />}

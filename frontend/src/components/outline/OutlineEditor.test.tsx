@@ -80,11 +80,12 @@ describe("OutlineEditor", () => {
     expect(section).toHaveValue("Resampling step by step");
   });
 
-  it("lists what the learner knows and still has to learn as wrapping text", () => {
+  it("lists what the learner knows and still has to learn", () => {
     renderEditor();
-    expect(screen.getByText("You already know")).toBeInTheDocument();
-    expect(
-      screen.getByText("How a bootstrap resample is constructed (with replacement, same size)").tagName,
-    ).toBe("SPAN");
+    expect(screen.getByRole("heading", { name: "You already know" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Still to learn" })).toBeInTheDocument();
+    const items = screen.getAllByRole("listitem").map((item) => item.textContent);
+    expect(items).toContain("Loss ratio definition (incurred claims / earned premium)");
+    expect(items).toContain("How a bootstrap resample is constructed (with replacement, same size)");
   });
 });

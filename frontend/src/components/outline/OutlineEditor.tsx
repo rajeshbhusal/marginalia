@@ -33,7 +33,7 @@ const SAVE_DELAY_MS = 800;
 
 // Text that's edited in place: it reads as text until it's hovered or focused
 const INLINE_FIELD =
-  "block w-full rounded-lg bg-transparent transition-colors focus:bg-surface focus-visible:outline-offset-0";
+  "block rounded-lg bg-transparent transition-colors focus:bg-surface focus-visible:outline-offset-0";
 
 export function OutlineEditor({ course }: { course: Course }) {
   const navigate = useNavigate();
@@ -183,13 +183,14 @@ export function OutlineEditor({ course }: { course: Course }) {
 
       <footer className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 sm:px-6">
-          <div className="min-w-0 flex-1 text-sm">
+          {/* Problems are announced as they appear; the routine save status isn't, so typing stays quiet */}
+          <div className="min-w-0 flex-1 text-sm" aria-live="polite">
             {problems.length > 0 ? (
               <Problem>{problems[0]}</Problem>
             ) : save.isError ? (
               <Problem>Couldn't save: {save.error.message}</Problem>
             ) : (
-              <p className="truncate text-ink-subtle" role="status">
+              <p className="truncate text-ink-subtle" aria-live="off">
                 {save.isPending ? "Saving…" : unsaved ? "Unsaved changes" : "All changes saved"}
                 <span className="hidden sm:inline">
                   {" "}
@@ -240,12 +241,11 @@ function ModuleEditor({
 }) {
   return (
     <li className="rounded-xl border border-line bg-surface p-4 shadow-(--elevation-xs) sm:p-5">
-      {/* On phones the actions share the number's row, so the title gets the full width */}
-      <div className="flex flex-wrap items-start gap-x-3 gap-y-1 sm:flex-nowrap">
+      <div className="flex flex-wrap items-start gap-x-3 sm:flex-nowrap">
         <span className="mt-1 flex size-7 shrink-0 items-center justify-center rounded-full bg-sunken text-sm font-semibold text-ink-muted tabular-nums">
           {index + 1}
         </span>
-        <div className="order-last -mx-1.5 min-w-0 basis-full sm:order-none sm:mx-0 sm:flex-1 sm:basis-auto">
+        <div className="min-w-0 flex-1">
           <AutoTextArea
             singleLine
             value={module.title}
@@ -256,7 +256,7 @@ function ModuleEditor({
             placeholder="Module title"
             className={clsx(
               INLINE_FIELD,
-              "px-1.5 py-0.5 text-lg font-semibold text-balance text-ink placeholder:text-ink-subtle hover:bg-surface-hover pointer-coarse:py-2",
+              "w-full px-1.5 py-0.5 text-lg font-semibold text-balance text-ink placeholder:text-ink-subtle hover:bg-surface-hover pointer-coarse:py-2",
             )}
           />
           <AutoTextArea
@@ -268,11 +268,12 @@ function ModuleEditor({
             placeholder="What this module covers (optional)"
             className={clsx(
               INLINE_FIELD,
-              "mt-0.5 px-1.5 py-0.5 text-sm text-pretty text-ink-muted placeholder:text-ink-subtle hover:bg-surface-hover",
+              "mt-0.5 w-full px-1.5 py-0.5 text-sm text-pretty text-ink-muted placeholder:text-ink-subtle hover:bg-surface-hover",
             )}
           />
         </div>
-        <div className="ml-auto flex sm:ml-0">
+        {/* Under the title on phones, so the title keeps the width; beside it on wider screens */}
+        <div className="flex w-full justify-end sm:w-auto">
           <IconButton
             label="Move module up"
             disabled={isFirst}
@@ -322,7 +323,7 @@ function ModuleEditor({
                 placeholder="Section title"
                 className={clsx(
                   INLINE_FIELD,
-                  "px-1.5 py-0.5 text-base font-medium text-balance text-ink placeholder:text-ink-subtle pointer-coarse:py-2 pointer-coarse:leading-7",
+                  "w-full px-1.5 py-0.5 text-base font-medium text-balance text-ink placeholder:text-ink-subtle pointer-coarse:py-2 pointer-coarse:leading-7",
                 )}
               />
               <AutoTextArea
@@ -339,7 +340,7 @@ function ModuleEditor({
                 placeholder="What it teaches (optional)"
                 className={clsx(
                   INLINE_FIELD,
-                  "px-1.5 py-0.5 text-sm text-pretty text-ink-muted placeholder:text-ink-subtle",
+                  "w-full px-1.5 py-0.5 text-sm text-pretty text-ink-muted placeholder:text-ink-subtle",
                 )}
               />
             </div>

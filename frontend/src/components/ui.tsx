@@ -231,8 +231,13 @@ export function AutoTextArea({
       rows={1}
       className={clsx("resize-none", singleLine && "overflow-hidden", className)}
       onChange={(event) => {
-        if (singleLine && /[\r\n]/.test(event.target.value)) {
-          event.target.value = event.target.value.replace(/\s*[\r\n]+\s*/g, " ");
+        const element = event.target;
+        if (singleLine && /[\r\n]/.test(element.value)) {
+          // Replace line breaks with spaces, keeping the caret where it was in the text
+          const oneLine = (text: string) => text.replace(/\s*[\r\n]+\s*/g, " ");
+          const caret = oneLine(element.value.slice(0, element.selectionStart)).length;
+          element.value = oneLine(element.value);
+          element.setSelectionRange(caret, caret);
         }
         onChange?.(event);
       }}

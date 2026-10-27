@@ -87,6 +87,7 @@ export function ReaderPage() {
                 variant="secondary"
                 size="sm"
                 onClick={() => void Promise.all([course.refetch(), section.refetch()])}
+                loading={course.isFetching || section.isFetching}
               >
                 Try again
               </Button>

@@ -25,7 +25,12 @@ export function CoursePage() {
                 My courses
               </Link>
             ) : (
-              <Button variant="secondary" size="sm" onClick={() => void course.refetch()}>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => void course.refetch()}
+                loading={course.isFetching}
+              >
                 Try again
               </Button>
             )
@@ -148,7 +153,7 @@ function PlanningView({ course }: { course: Course }) {
   return (
     <main className="mx-auto flex max-w-lg flex-col items-center px-4 py-24 text-center">
       <Spinner className="size-8 text-brand" />
-      <h1 className="mt-6 font-serif text-2xl font-semibold tracking-tight text-ink" role="status">
+      <h1 className="mt-6 font-serif text-2xl font-semibold tracking-tight text-ink">
         {revising ? "Revising your outline" : "Designing your course"}
       </h1>
       <p className="mt-2 text-pretty text-ink-muted">{course.goal}</p>
