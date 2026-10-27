@@ -1,5 +1,14 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowRight, ChevronDown, ChevronUp, Plus, Trash2, Wand2 } from "lucide-react";
+import {
+  ArrowRight,
+  ChevronDown,
+  ChevronUp,
+  CircleCheck,
+  CircleDashed,
+  Plus,
+  Trash2,
+  Wand2,
+} from "lucide-react";
 import { useEffect, useReducer, useState } from "react";
 import { useNavigate } from "react-router";
 import { api } from "../../api/client";
@@ -16,7 +25,7 @@ import {
   sectionCount,
   toOutlineUpdate,
 } from "../../lib/outline";
-import { AutoTextArea, Badge, Button, Card, ErrorNotice, IconButton } from "../ui";
+import { AutoTextArea, Button, Card, ErrorNotice, IconButton } from "../ui";
 
 const SAVE_DELAY_MS = 800;
 
@@ -80,12 +89,16 @@ export function OutlineEditor({ course }: { course: Course }) {
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0">
           <p className="text-sm font-medium text-accent">Your course outline</p>
-          <input
-            value={draft.title}
-            onChange={(e) => edit({ type: "setCourse", field: "title", value: e.target.value })}
-            aria-label="Course title"
-            className="-mx-2 mt-1 w-full rounded-lg bg-transparent px-2 py-1 font-serif text-3xl font-semibold tracking-tight text-ink hover:bg-surface-2/70 focus:bg-surface focus:outline-none sm:text-4xl"
-          />
+          {/* A wrapping field, so long titles break onto balanced lines instead of being cut off */}
+          <h1 className="mt-1">
+            <AutoTextArea
+              singleLine
+              value={draft.title}
+              onChange={(e) => edit({ type: "setCourse", field: "title", value: e.target.value })}
+              aria-label="Course title"
+              className="-mx-2 block w-[calc(100%+1rem)] rounded-lg bg-transparent px-2 py-1 font-serif text-3xl leading-tight font-semibold tracking-tight text-balance text-ink hover:bg-surface-2/70 focus:bg-surface focus:outline-none sm:text-4xl"
+            />
+          </h1>
           <AutoTextArea
             value={draft.description}
             onChange={(e) => edit({ type: "setCourse", field: "description", value: e.target.value })}
@@ -206,14 +219,15 @@ function ModuleEditor({
           {index + 1}
         </span>
         <div className="min-w-0 flex-1">
-          <input
+          <AutoTextArea
+            singleLine
             value={module.title}
             onChange={(e) =>
               edit({ type: "updateModule", module: module.key, changes: { title: e.target.value } })
             }
             aria-label={`Module ${index + 1} title`}
             placeholder="Module title"
-            className="w-full rounded-md bg-transparent px-1.5 py-0.5 text-lg font-semibold text-ink hover:bg-surface-2/70 focus:bg-surface-2 focus:outline-none"
+            className="block w-full rounded-md bg-transparent px-1.5 py-0.5 text-lg font-semibold text-balance text-ink hover:bg-surface-2/70 focus:bg-surface-2 focus:outline-none"
           />
           <AutoTextArea
             value={module.summary}
@@ -260,7 +274,8 @@ function ModuleEditor({
               {index + 1}.{sectionIndex + 1}
             </span>
             <div className="min-w-0 flex-1">
-              <input
+              <AutoTextArea
+                singleLine
                 value={section.title}
                 onChange={(e) =>
                   edit({
@@ -272,7 +287,7 @@ function ModuleEditor({
                 }
                 aria-label={`Section ${index + 1}.${sectionIndex + 1} title`}
                 placeholder="Section title"
-                className="w-full rounded-md bg-transparent px-1.5 py-0.5 font-medium text-ink focus:bg-surface focus:outline-none"
+                className="block w-full rounded-md bg-transparent px-1.5 py-0.5 font-medium text-balance text-ink focus:bg-surface focus:outline-none"
               />
               <AutoTextArea
                 value={section.summary}
@@ -341,24 +356,34 @@ function ProfileCard({ profile }: { profile: LearnerProfile }) {
       <p className="text-xs font-semibold tracking-wide text-ink-3 uppercase">Where you're starting</p>
       <p className="mt-2 font-medium text-ink capitalize">{profile.level}</p>
       <p className="mt-1 text-sm text-ink-2">{profile.summary}</p>
-      {profile.strengths.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {profile.strengths.map((item) => (
-            <Badge key={item} tone="success">
-              {item}
-            </Badge>
-          ))}
-        </div>
-      )}
-      {profile.gaps.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          {profile.gaps.map((item) => (
-            <Badge key={item} tone="warning">
-              {item}
-            </Badge>
-          ))}
-        </div>
-      )}
+      <ProfileList title="You already know" items={profile.strengths} icon={CircleCheck} />
+      <ProfileList title="Still to learn" items={profile.gaps} icon={CircleDashed} />
     </Card>
+  );
+}
+
+// Strengths and gaps are phrases, often long ones, so they're a wrapping list rather than pills
+function ProfileList({
+  title,
+  items,
+  icon: Icon,
+}: {
+  title: string;
+  items: string[];
+  icon: typeof CircleCheck;
+}) {
+  if (items.length === 0) return null;
+  return (
+    <div className="mt-4 border-t border-line pt-4">
+      <p className="text-sm font-medium text-ink">{title}</p>
+      <ul className="mt-2 space-y-1.5">
+        {items.map((item) => (
+          <li key={item} className="flex gap-2 text-sm text-ink-2">
+            <Icon className="mt-0.5 size-4 shrink-0 text-ink-3" aria-hidden />
+            <span className="min-w-0">{item}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

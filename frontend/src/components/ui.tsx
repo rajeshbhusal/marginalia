@@ -5,6 +5,8 @@ import {
   forwardRef,
   type ReactNode,
   type TextareaHTMLAttributes,
+  useCallback,
+  useEffect,
   useLayoutEffect,
   useRef,
 } from "react";
@@ -144,21 +146,70 @@ export function ErrorNotice({
   );
 }
 
-/** A textarea that grows with its content. */
+/**
+ * A textarea that grows with its content. With `singleLine` the value stays on one line (Enter
+ * does nothing and pasted line breaks become spaces), but long text still wraps on screen.
+ */
 export function AutoTextArea({
   className,
   value,
+  singleLine = false,
+  onChange,
+  onKeyDown,
   ...props
-}: TextareaHTMLAttributes<HTMLTextAreaElement> & { value: string }) {
+}: TextareaHTMLAttributes<HTMLTextAreaElement> & { value: string; singleLine?: boolean }) {
   const ref = useRef<HTMLTextAreaElement>(null);
-  useLayoutEffect(() => {
+
+  const fit = useCallback(() => {
     const element = ref.current;
     if (!element) return;
     element.style.height = "auto";
     element.style.height = `${element.scrollHeight}px`;
-  }, [value]);
+  }, []);
+
+  useLayoutEffect(fit, [value, fit]);
+
+  // Wrapping changes with the width and once web fonts have loaded, so measure again then
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+    let width = element.clientWidth;
+    const observer =
+      typeof ResizeObserver === "undefined"
+        ? null
+        : new ResizeObserver(() => {
+            if (element.clientWidth === width) return;
+            width = element.clientWidth;
+            fit();
+          });
+    observer?.observe(element);
+    document.fonts?.addEventListener("loadingdone", fit);
+    return () => {
+      observer?.disconnect();
+      document.fonts?.removeEventListener("loadingdone", fit);
+    };
+  }, [fit]);
+
   return (
-    <textarea ref={ref} value={value} rows={1} className={clsx("resize-none", className)} {...props} />
+    <textarea
+      ref={ref}
+      value={value}
+      rows={1}
+      className={clsx("resize-none", singleLine && "overflow-hidden", className)}
+      onChange={(event) => {
+        if (singleLine && /[\r\n]/.test(event.target.value)) {
+          event.target.value = event.target.value.replace(/\s*[\r\n]+\s*/g, " ");
+        }
+        onChange?.(event);
+      }}
+      onKeyDown={(event) => {
+        if (singleLine && event.key === "Enter" && !event.nativeEvent.isComposing) {
+          event.preventDefault();
+        }
+        onKeyDown?.(event);
+      }}
+      {...props}
+    />
   );
 }
 
