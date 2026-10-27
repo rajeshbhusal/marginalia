@@ -12,7 +12,7 @@ import {
 } from "react";
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
-type ButtonSize = "sm" | "md" | "lg";
+type ButtonSize = "sm" | "md" | "lg" | "xl";
 
 // One primary per view; secondary and ghost for everything else
 const VARIANTS: Record<ButtonVariant, string> = {
@@ -23,18 +23,19 @@ const VARIANTS: Record<ButtonVariant, string> = {
   danger: "text-negative-ink hover:bg-negative-soft",
 };
 
-// 32, 36 and 40px tall; 44px on touch screens
+// 32, 36 and 40px tall (48px beside a large input); at least 44px on touch screens
 const SIZES: Record<ButtonSize, string> = {
   sm: "h-8 gap-1.5 px-3 text-sm",
   md: "h-9 gap-2 px-4 text-sm",
   lg: "h-10 gap-2 px-5 text-base",
+  xl: "h-12 gap-2 px-6 text-base",
 };
 
 /** Button styles, also for links that look like buttons. */
 export function buttonClasses(variant: ButtonVariant = "primary", size: ButtonSize = "md") {
   return clsx(
     "inline-flex shrink-0 items-center justify-center rounded-lg font-medium transition-colors",
-    "pointer-coarse:h-11 disabled:cursor-not-allowed disabled:opacity-50",
+    "pointer-coarse:min-h-11 disabled:cursor-not-allowed disabled:opacity-50",
     VARIANTS[variant],
     SIZES[size],
   );
@@ -75,7 +76,7 @@ export function IconButton({
       aria-label={label}
       title={label}
       className={clsx(
-        "inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-ink-subtle transition-colors pointer-coarse:size-11",
+        "inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-ink-subtle transition-colors pointer-coarse:min-h-11 pointer-coarse:min-w-11",
         "hover:bg-surface-hover hover:text-ink disabled:pointer-events-none disabled:text-ink-faint",
         className,
       )}
